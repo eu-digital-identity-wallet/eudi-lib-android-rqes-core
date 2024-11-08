@@ -24,6 +24,7 @@ HTTP client factory should be used. This property is optional can be used to pro
 | Name | Summary |
 |---|---|
 | [Authorized](-authorized/index.md) | [androidJvm]<br>interface [Authorized](-authorized/index.md)<br>The authorized service interface. This interface provides the methods to interact with the authorized service. The authorized service is used to access the user's credentials and sign the documents. |
+| [Companion](-companion/index.md) | [androidJvm]<br>object [Companion](-companion/index.md) |
 | [CredentialAuthorized](-credential-authorized/index.md) | [androidJvm]<br>interface [CredentialAuthorized](-credential-authorized/index.md)<br>The credential authorized interface. This interface provides the methods to interact with the authorized credential. The authorized credential is used to sign the documents. |
 
 ## Functions

@@ -11,32 +11,37 @@ credential authorization URLs, authorizing credentials, and signing documents. I
 compliant electronic signatures by interacting with authorized credentials and handling document
 signing processes.
 
-## Document signing flow
+## Requirements
 
-```mermaid
-classDiagram
-    class RQESService {
-        <<interface>>
-        +suspend getRSSPMetadata() : Result~RSSPMetadata~
-        +suspend getServiceAuthorizationUrl() : Result~HttpsUrl~
-        +suspend authorizeService(authorizationCode: AuthorizationCode) : Result~RQESServiceAuthorized~
+- Android 8 (API level 26) or higher
+
+### Dependencies
+
+To use snapshot versions add the following to your project's settings.gradle file:
+
+```kotlin
+dependencyResolutionManagement {
+    repositories {
+        // .. other repositories
+        maven {
+            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            mavenContent { snapshotsOnly() }
+        }
     }
-
-    class RQESServiceAuthorized {
-        <<interface>>
-        +suspend listCredentials(request: CredentialsListRequest? = null) : Result~List~CredentialInfo~~ 
-        +suspend getCredentialAuthorizationUrl(credential: CredentialInfo, documents: List~Document~, hashAlgorithmOID: HashAlgorithmOID? = null, certificates: List~X509Certificate~? = null) : Result~HttpsUrl~
-        +suspend authorizeCredential(authorizationCode: AuthorizationCode) : Result~ RQESServiceCredentialAuthorized~
-    }
-
-    class RQESServiceCredentialAuthorized {
-        <<interface>>
-        +suspend signDocuments(algorithmOID: AlgorithmOID? = null, certificates: List~X509Certificate~? = null) : Result~List~Document~~
-    }
-
-    RQESService --> "1" RQESServiceAuthorized
-    RQESServiceAuthorized --> "1" RQESServiceCredentialAuthorized
+}
 ```
+
+To include the library in your project, add the following dependencies to your app's build.gradle
+file.
+
+```kotlin
+dependencies {
+    // EUDI Wallet RQES service library
+    implementation("eu.europa.ec.eudi:eudi-lib-android-rqes-core:0.0.1-SNAPSHOT")
+}
+```
+
+## Document signing flow
 
 ```mermaid
 sequenceDiagram
@@ -44,27 +49,104 @@ sequenceDiagram
     participant RQESService
     participant RQESService.Authorized
     participant RQESService.CredentialAuthorized
+    Client ->>+ RQESService: getRSSPMetadata()
+    RQESService -->>- Client: RSSPMetadata
+    Client ->>+ RQESService: getServiceAuthorizationUrl()
+    RQESService -->>- Client: HttpsUrl
+    Client ->>+ RQESService: authorizeService(authorizationCode)
+    RQESService -->>- Client: RQESService.Authorized
+    Client ->>+ RQESService.Authorized: listCredentials(request)
+    RQESService.Authorized -->>- Client: List<CredentialInfo>
+    Client ->>+ RQESService.Authorized: getCredentialAuthorizationUrl(credential, documents)
+    RQESService.Authorized -->>- Client: HttpsUrl
+    Client ->>+ RQESService.Authorized: authorizeCredential(authorizationCode)
+    RQESService.Authorized -->>- Client: RQESService.CredentialAuthorized
+    Client ->>+ RQESService.CredentialAuthorized: signDocuments(algorithmOID)
+    RQESService.CredentialAuthorized -->>- Client: SignedDocuments
+```
 
-    Client->>+RQESService: getRSSPMetadata()
-    RQESService-->>-Client: RSSPMetadata
+## How to use
 
-    Client->>+RQESService: getServiceAuthorizationUrl()
-    RQESService-->>-Client: HttpsUrl
+At first, construct an instance of the `RQESService` like shown below:
 
-    Client->>+RQESService: authorizeService(authorizationCode)
-    RQESService-->>-Client: RQESService.Authorized
+```kotlin
+val rqesService = RQESService(
+    serviceEndpointUrl = "https://example.com/csc/v2",
+    config = CSCClientConfig(
+        client = OAuth2Client.Confidential.ClientSecretBasic(
+            clientId = "client-id",
+            clientSecret = "client-secret"
+        ),
+        authFlowRedirectionURI = URI("rqes:redirect"),
+        scaBaseURL = URL("https://example.com"),
+    ),
+)
+```
 
-    Client->>+RQESService.Authorized: listCredentials(request)
-    RQESService.Authorized-->>-Client: List<CredentialInfo>
+You can get the metadata of the RQES service by calling the `getRSSPMetadata` method:
 
-    Client->>+RQESService.Authorized: getCredentialAuthorizationUrl(credential, documents, hashAlgorithmOID, certificates)
-    RQESService.Authorized-->>-Client: HttpsUrl
+```kotlin
+val metadata = rqesService.getRSSPMetadata().getOrThrow()
+``` 
 
-    Client->>+RQESService.Authorized: authorizeCredential(authorizationCode)
-    RQESService.Authorized-->>-Client: RQESService.CredentialAuthorized
+To authorize the service, you need to get the authorization URL and open it in a browser. After the
+user has authorized the service, the browser will be redirected to the `authFlowRedirectionURI`,
+that
+is configured in the `CSCClientConfig`, with a query parameter named `code` containing the
+authorization code. You can then authorize the service by calling the `authorizeService` method:
 
-    Client->>+RQESService.CredentialAuthorized: signDocuments(algorithmOID, certificates)
-    RQESService.CredentialAuthorized-->>-Client: List<Document>
+```kotlin
+val authorizationUrl = rqesService.getServiceAuthorizationUrl().getOrThrow()
+
+// Open the authorizationUrl in a browser
+// After the user has authorized the service, the browser will be redirected to the authFlowRedirectionURI
+// with a query parameter named "code" containing the authorization code
+
+val authorizationCode = AuthorizationCode("code")
+val authorizedService = rqesService.authorizeService(authorizationCode).getOrThrow()
+```
+
+With the authorized service, you can list the available credentials by calling the `listCredentials`
+method.
+
+You can then select the credential you want to use, prepare the documents to sign, and get
+the credential authorization URL by calling the `getCredentialAuthorizationUrl` method. After the
+user has authorized the credential, you can authorize it by calling the `authorizeCredential`
+method.
+
+Finally, you can sign the documents by calling the `signDocuments` method.
+
+```kotlin
+val credentials = authorizedService.listCredentials().getOrThrow()
+// Use the credentials to select the one you want to use
+// For example, select the first credential
+
+val credential = credentials.first()
+// Prepare the documents to sign
+val unsignedDocuments = UnsignedDocuments(
+    listOf(
+        UnsignedDocument(
+            label = "Document to sign",
+            file = File("document.pdf"),
+        )
+    )
+)
+// Get the credential authorization URL for the selected credential and documents
+val credentialAuthorizationUrl = authorizedService.getCredentialAuthorizationUrl(
+    credential = credential,
+    documents = unsignedDocuments,
+).getOrThrow()
+
+// Use the credentialAuthorizationUrl to open a browser and let the user authorize the credential
+// and get the authorization code from the redirect URI query parameter
+val credentialAuthorizationCode = AuthorizationCode("credential-code")
+
+// Authorize the credential
+val authorizedCredential = authorizedService.authorizeCredential(authorizationCode).getOrThrow()
+
+// Sign the documents
+val signAlgorithm = SigningAlgorithmOID.ECDSA_SHA256
+val signedDocuments = authorizedCredential.signDocuments(signAlgorithm).getOrThrow()
 ```
 
 ## How to contribute

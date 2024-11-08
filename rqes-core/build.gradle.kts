@@ -103,13 +103,10 @@ android {
 }
 
 dependencies {
-    implementation(libs.appcompat)
+//    implementation(libs.appcompat)
     api(libs.eudi.rqes.jvm)
-
-//    implementation(libs.ktor.client.core)
-//    implementation(libs.ktor.client.content.negotiation)
-//    implementation(libs.ktor.client.serialization)
-//    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.kotlinx.io.core)
+    implementation(libs.kotlinx.datetime)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.mockk)
@@ -148,6 +145,7 @@ tasks.dokkaGfm.configure {
 
 tasks.register<Jar>("dokkaHtmlJar") {
     group = "documentation"
+    description = "Assembles HTML documentation with Dokka."
     dependsOn(tasks.dokkaHtml)
     from(tasks.dokkaHtml.flatMap { it.outputDirectory })
     archiveClassifier.set("html-docs")
@@ -155,6 +153,7 @@ tasks.register<Jar>("dokkaHtmlJar") {
 
 tasks.register<Jar>("dokkaJavadocJar") {
     group = "documentation"
+    description = "Assembles a jar archive containing the Javadoc documentation."
     dependsOn(tasks.dokkaJavadoc)
     from(tasks.dokkaJavadoc.flatMap { it.outputDirectory })
     archiveClassifier.set("javadoc")
@@ -187,6 +186,7 @@ tasks.generateLicenseReport.configure {
 // Build documentation and license report
 tasks.register<Task>("buildDocumentation") {
     group = "documentation"
+    description = "Builds the documentation and license report."
     dependsOn("dokkaGfm", "generateLicenseReport")
 }
 tasks.assemble.configure {

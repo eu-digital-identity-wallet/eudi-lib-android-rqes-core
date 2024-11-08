@@ -16,14 +16,14 @@
 
 package eu.europa.ec.eudi.rqes.core
 
-import eu.europa.ec.eudi.rqes.AlgorithmOID
 import eu.europa.ec.eudi.rqes.AuthorizationCode
+import eu.europa.ec.eudi.rqes.CSCClientConfig
 import eu.europa.ec.eudi.rqes.CredentialInfo
 import eu.europa.ec.eudi.rqes.CredentialsListRequest
-import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.HttpsUrl
 import eu.europa.ec.eudi.rqes.RSSPMetadata
-import java.security.cert.X509Certificate
+import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
+import io.ktor.client.HttpClient
 
 /**
  * The RQES service interface.
@@ -96,17 +96,13 @@ interface RQESService {
          *
          * @param credential The credential info.
          * @param documents The list of documents to be signed.
-         * @param hashAlgorithmOID The hash algorithm OID.
          * Implementations should use the default hash algorithm if this parameter is null.
-         * @param certificates The list of certificates.
          * Implementations should use the default certificates if this parameter is null.
          * @return The credential authorization URL as a [Result] of [HttpsUrl].
          */
         suspend fun getCredentialAuthorizationUrl(
             credential: CredentialInfo,
-            documents: List<Document>,
-            hashAlgorithmOID: HashAlgorithmOID? = null,
-            certificates: List<X509Certificate>? = null,
+            documents: UnsignedDocuments,
         ): Result<HttpsUrl>
 
         /**
@@ -136,13 +132,22 @@ interface RQESService {
          * This method is used to sign the documents.
          * The documents are the list of documents that were passed to the [RQESService.Authorized.getCredentialAuthorizationUrl] method.
          * The documents are signed using the authorized credential.
-         * @param algorithmOID The algorithm OID. Implementations should use the default algorithm if this parameter is null.
-         * @param certificates The list of certificates. Implementations should use the default certificates if this parameter is null.
-         * @return The list of signed documents as a [Result] of [List] of [Document]. The signed documents are the documents that were signed.
+         * @param signingAlgorithmOID The algorithm OID. Implementations should use the default algorithm if this parameter is null.
+         * @return The list of signed documents as a [Result] of [SignedDocuments]. The signed documents are the documents that were signed.
          */
         suspend fun signDocuments(
-            algorithmOID: AlgorithmOID? = null,
-            certificates: List<X509Certificate>? = null
-        ): Result<List<Document>>
+            signingAlgorithmOID: SigningAlgorithmOID,
+        ): Result<SignedDocuments>
+    }
+
+    companion object {
+        /**
+         * Create the RQES service.
+         */
+        operator fun invoke(
+            serviceEndpointUrl: String,
+            config: CSCClientConfig,
+            httpClientFactory: (() -> HttpClient)? = null
+        ): RQESService = RQESServiceImpl(serviceEndpointUrl, config, httpClientFactory)
     }
 }

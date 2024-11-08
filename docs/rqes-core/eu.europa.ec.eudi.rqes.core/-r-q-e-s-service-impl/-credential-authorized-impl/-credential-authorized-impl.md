@@ -3,4 +3,4 @@
 # CredentialAuthorizedImpl
 
 [androidJvm]\
-constructor(client: CSCClient, documents: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[Document](../../-document/index.md)&gt;, credentialAuthorized: CredentialAuthorized.SCAL2, signatureEmbedder: [DocumentSignatureEmbedder](../../-document-signature-embedder/index.md))
+constructor(client: CSCClient, documentsToSign: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;DocumentToSign&gt;, documentDigestList: DocumentDigestList, credentialAuthorized: CredentialAuthorized)

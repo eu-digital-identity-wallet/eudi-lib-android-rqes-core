@@ -16,23 +16,14 @@
 
 package eu.europa.ec.eudi.rqes.core
 
-import eu.europa.ec.eudi.rqes.Signature
-import java.security.cert.X509Certificate
+import java.io.InputStream
 
 /**
- * Embeds a signature into a document.
+ * Represents a list of signed documents.
+ *
+ * @constructor Creates a new instance of [SignedDocuments] with the given list of signed documents.
+ *
+ * @param signedDocuments The list of [InputStream] of signed documents' content.
  */
-fun interface DocumentSignatureEmbedder {
-    /**
-     * Embeds a signature into a document.
-     * @param document the document to embed the signature into
-     * @param signature the signature to embed
-     * @param certificates the certificates to use when embedding the signature (optional)
-     * @return the document with the embedded signature
-     */
-    fun embedSignature(
-        document: Document,
-        signature: Signature,
-        certificates: List<X509Certificate>?
-    ): Document
-}
+class SignedDocuments(signedDocuments: List<InputStream>) :
+    List<InputStream> by ArrayList(signedDocuments)

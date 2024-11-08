@@ -3,7 +3,7 @@
 # getCredentialAuthorizationUrl
 
 [androidJvm]\
-open suspend override fun [getCredentialAuthorizationUrl](get-credential-authorization-url.md)(credential: CredentialInfo, documents: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[Document](../../-document/index.md)&gt;, hashAlgorithmOID: HashAlgorithmOID?, certificates: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[X509Certificate](https://developer.android.com/reference/kotlin/java/security/cert/X509Certificate.html)&gt;?): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html)&lt;HttpsUrl&gt;
+open suspend override fun [getCredentialAuthorizationUrl](get-credential-authorization-url.md)(credential: CredentialInfo, documents: [UnsignedDocuments](../../-unsigned-documents/index.md)): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html)&lt;HttpsUrl&gt;
 
 Get the credential authorization URL. This method is used to get the credential authorization URL.
 
@@ -20,6 +20,4 @@ androidJvm
 | | |
 |---|---|
 | credential | The credential info. |
-| documents | The list of documents to be signed. |
-| hashAlgorithmOID | The hash algorithm OID. Implementations should use the default hash algorithm if this parameter is null. |
-| certificates | The list of certificates. Implementations should use the default certificates if this parameter is null. |
+| documents | The list of documents to be signed. Implementations should use the default hash algorithm if this parameter is null. Implementations should use the default certificates if this parameter is null. |
