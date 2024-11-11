@@ -124,14 +124,15 @@ val credentials = authorizedService.listCredentials().getOrThrow()
 val credential = credentials.first()
 // Prepare the documents to sign
 val unsignedDocuments = UnsignedDocuments(
-    listOf(
+    unsignedDocuments = listOf(
         UnsignedDocument(
             label = "Document to sign",
             file = File("document.pdf"),
         )
-    )
+    ),
+    hashAlgorithmOID = HashAlgorithmOID.SHA_256
 )
-// Get the credential authorization URL for the selected credential and documents
+
 val credentialAuthorizationUrl = authorizedService.getCredentialAuthorizationUrl(
     credential = credential,
     documents = unsignedDocuments,
@@ -147,6 +148,13 @@ val authorizedCredential = authorizedService.authorizeCredential(authorizationCo
 // Sign the documents
 val signAlgorithm = SigningAlgorithmOID.ECDSA_SHA256
 val signedDocuments = authorizedCredential.signDocuments(signAlgorithm).getOrThrow()
+
+signedDocuments.forEachIndexed { index, inputStream ->
+    // Save the signed document
+    inputStream.use { signedDocument ->
+        File("signed-document-$index.pdf").outputStream().use { signedDocument.copyTo(it) }
+    }
+}
 ```
 
 ## How to contribute
