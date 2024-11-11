@@ -1,6 +1,7 @@
 $dokka.format:gfm-v1
 $dokka.linkExtension:md
 $dokka.location:eu.europa.ec.eudi.rqes.core////PointingToDeclaration/rqes-core/eu.europa.ec.eudi.rqes.core/index.md
+$dokka.location:eu.europa.ec.eudi.rqes.core//signDocuments/eu.europa.ec.eudi.rqes.core.RQESService.Authorized#eu.europa.ec.eudi.rqes.AuthorizationCode/PointingToDeclaration/rqes-core/eu.europa.ec.eudi.rqes.core/sign-documents.md
 $dokka.location:eu.europa.ec.eudi.rqes.core/RQESService.Authorized///PointingToDeclaration/rqes-core/eu.europa.ec.eudi.rqes.core/-r-q-e-s-service/-authorized/index.md
 $dokka.location:eu.europa.ec.eudi.rqes.core/RQESService.Authorized/authorizeCredential/#eu.europa.ec.eudi.rqes.AuthorizationCode/PointingToDeclaration/rqes-core/eu.europa.ec.eudi.rqes.core/-r-q-e-s-service/-authorized/authorize-credential.md
 $dokka.location:eu.europa.ec.eudi.rqes.core/RQESService.Authorized/getCredentialAuthorizationUrl/#eu.europa.ec.eudi.rqes.CredentialInfo#eu.europa.ec.eudi.rqes.core.UnsignedDocuments/PointingToDeclaration/rqes-core/eu.europa.ec.eudi.rqes.core/-r-q-e-s-service/-authorized/get-credential-authorization-url.md

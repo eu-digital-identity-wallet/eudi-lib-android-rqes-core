@@ -57,11 +57,11 @@ sequenceDiagram
     RQESService -->>- Client: RQESService.Authorized
     Client ->>+ RQESService.Authorized: listCredentials(request)
     RQESService.Authorized -->>- Client: List<CredentialInfo>
-    Client ->>+ RQESService.Authorized: getCredentialAuthorizationUrl(credential, documents)
+    Client ->>+ RQESService.Authorized: getCredentialAuthorizationUrl(credential, UnsignedDocuments)
     RQESService.Authorized -->>- Client: HttpsUrl
     Client ->>+ RQESService.Authorized: authorizeCredential(authorizationCode)
     RQESService.Authorized -->>- Client: RQESService.CredentialAuthorized
-    Client ->>+ RQESService.CredentialAuthorized: signDocuments(algorithmOID)
+    Client ->>+ RQESService.CredentialAuthorized: signDocuments()
     RQESService.CredentialAuthorized -->>- Client: SignedDocuments
 ```
 

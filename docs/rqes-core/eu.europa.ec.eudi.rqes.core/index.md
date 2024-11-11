@@ -11,3 +11,9 @@
 | [SignedDocuments](-signed-documents/index.md) | [androidJvm]<br>class [SignedDocuments](-signed-documents/index.md)(signedDocuments: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt;) : [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt; <br>Represents a list of signed documents. |
 | [UnsignedDocument](-unsigned-document/index.md) | [androidJvm]<br>data class [UnsignedDocument](-unsigned-document/index.md)(val label: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), val file: [File](https://developer.android.com/reference/kotlin/java/io/File.html), val signingConfig: [UnsignedDocument.Config](-unsigned-document/-config/index.md) = Config.DEFAULT)<br>Represents a document that is to be signed. |
 | [UnsignedDocuments](-unsigned-documents/index.md) | [androidJvm]<br>class [UnsignedDocuments](-unsigned-documents/index.md)(unsignedDocuments: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[UnsignedDocument](-unsigned-document/index.md)&gt;) : [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[UnsignedDocument](-unsigned-document/index.md)&gt; <br>A list of [UnsignedDocument](-unsigned-document/index.md)s to be signed. |
+
+## Functions
+
+| Name | Summary |
+|---|---|
+| [signDocuments](sign-documents.md) | [androidJvm]<br>suspend fun [RQESService.Authorized](-r-q-e-s-service/-authorized/index.md).[signDocuments](sign-documents.md)(authorizationCode: AuthorizationCode): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html)&lt;[SignedDocuments](-signed-documents/index.md)&gt;<br>Sign the documents with the given authorization code. |
