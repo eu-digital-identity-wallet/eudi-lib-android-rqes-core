@@ -108,6 +108,9 @@ dependencies {
     implementation(libs.kotlinx.io.core)
     implementation(libs.kotlinx.datetime)
 
+    // Ktor Android Engine
+    runtimeOnly(libs.ktor.client.android)
+
     testImplementation(kotlin("test"))
     testImplementation(libs.mockk)
     testImplementation(libs.kotlin.coroutines.test)

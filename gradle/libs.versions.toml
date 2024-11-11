@@ -1,6 +1,5 @@
 [versions]
 androidx-test ="1.4.0"
-appcompat = "1.6.1"
 dependency-license-report = "2.8"
 dependencycheck = "9.0.9"
 dokka = "1.9.20"
@@ -10,7 +9,6 @@ eudi-rqes-jvm = "0.0.1-SNAPSHOT"
 gradle-plugin = "8.6.0"
 jacoco = "0.8.12"
 java = "17"
-junit = "4.13.2"
 junit-android = "1.2.1"
 kotlin = "2.0.20"
 kotlinx-datetime = "0.6.0"
@@ -23,24 +21,17 @@ sonarqube = "5.1.0.4882"
 
 [libraries]
 android-junit = { module = "androidx.test.ext:junit", version.ref = "junit-android" }
-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 espresso-contrib = { module = "androidx.test.espresso:espresso-contrib", version.ref = "espresso-contrib" }
 espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espresso-core" }
 espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "espresso-core" }
 eudi-rqes-jvm = { module = "eu.europa.ec.eudi:eudi-lib-jvm-rqes-csc-kt", version.ref = "eudi-rqes-jvm" }
-junit = { module = "junit:junit", version.ref = "junit" }
-junit-jupiter-params = { module = "org.junit.jupiter:junit-jupiter-params", version.ref = "junit" }
 kotlinx-datetime = { group = "org.jetbrains.kotlinx", name = "kotlinx-datetime", version.ref = "kotlinx-datetime" }
-kotlinx-io-bytestring = { group = "org.jetbrains.kotlinx", name = "kotlinx-io-bytestring", version.ref = "kotlinx-io" }
 kotlinx-io-core = { group = "org.jetbrains.kotlinx", name = "kotlinx-io-core", version.ref = "kotlinx-io" }
 kotlin-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlin-coroutines-test" }
-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 ktor-client-logging = {module ="io.ktor:ktor-client-logging", version.ref="ktor"}
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
 ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
-ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", version.ref = "ktor" }
-ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 test-core = { module = "androidx.test:core", version.ref = "androidx-test" }
 test-coreKtx = { module = "androidx.test:core-ktx", version.ref = "androidx-test" }
@@ -53,6 +44,5 @@ dependency-license-report = { id = "com.github.jk1.dependency-license-report", v
 dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "dependencycheck" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }
