@@ -1,7 +1,7 @@
 
 # EUDI RQES Core library for Android
 ## Dependency License Report
-_2024-11-08 15:05:47 EET_
+_2024-11-11 15:24:00 EET_
 ## Apache License, Version 2.0
 
 **1** **Group:** `org.jetbrains.kotlin` **Name:** `kotlin-stdlib` **Version:** `2.0.20` 

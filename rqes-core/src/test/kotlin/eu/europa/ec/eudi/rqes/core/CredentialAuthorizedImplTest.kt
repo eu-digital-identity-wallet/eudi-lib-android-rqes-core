@@ -39,8 +39,8 @@ class CredentialAuthorizedImplTest {
 
     @Test
     fun `test signDocuments returns the SignedDocuments for SCAL1`() = runTest {
+
         val mockClient = mockk<CSCClient>(relaxed = true)
-        val signingAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256
         val documentsToSignList = listOf<DocumentToSign>(mockk())
         val documentDigestList = mockk<DocumentDigestList> {
             every { hashAlgorithmOID } returns HashAlgorithmOID.SHA_256
@@ -50,37 +50,41 @@ class CredentialAuthorizedImplTest {
             every { signatures } returns listOf<Signature>(mockk())
         }
         val signedDocumentsInputStreams = listOf<InputStream>(mockk())
-        val credentialAuthorized = mockk<CredentialAuthorized.SCAL1> {
-            every { credentialCertificate } returns mockk()
-            coEvery {
-                with(mockClient) {
-                    signHash(documentDigestList, signingAlgorithmOID)
-                }
-            } returns Result.success(signatureList)
-
-            coEvery {
-                with(mockClient) {
-                    getSignedDocuments(
-                        documents = documentsToSignList,
-                        signatures = signatureList.signatures,
-                        credentialCertificate = credentialCertificate,
-//                        hashAlgorithmOID = documentDigestList.hashAlgorithmOID,
-                        hashAlgorithmOID = any(), // TODO: Fix this
-                        signatureTimestamp = documentDigestList.hashCalculationTime
-                    )
-                }
-            } returns signedDocumentsInputStreams
-        }
+        val credentialAuthorized = mockk<CredentialAuthorized.SCAL1>()
 
         val authorizedCredentialService = CredentialAuthorizedImpl(
             client = mockClient,
             documentDigestList = documentDigestList,
             documentsToSign = documentsToSignList,
-            credentialAuthorized = credentialAuthorized
+            credentialAuthorized = credentialAuthorized,
+            signingAlgorithm = SigningAlgorithmOID.ECDSA_SHA256,
         )
 
+        every { credentialAuthorized.credentialCertificate } returns mockk()
+        coEvery {
+            with(mockClient) {
+                credentialAuthorized.signHash(
+                    documentDigestList,
+                    authorizedCredentialService.signingAlgorithm
+                )
+            }
+        } returns Result.success(signatureList)
 
-        val result = authorizedCredentialService.signDocuments(signingAlgorithmOID)
+        coEvery {
+            with(mockClient) {
+                getSignedDocuments(
+                    documents = documentsToSignList,
+                    signatures = signatureList.signatures,
+                    credentialCertificate = credentialAuthorized.credentialCertificate,
+//                        hashAlgorithmOID = documentDigestList.hashAlgorithmOID,
+                    hashAlgorithmOID = any(), // TODO: Fix this
+                    signatureTimestamp = documentDigestList.hashCalculationTime
+                )
+            }
+        } returns signedDocumentsInputStreams
+
+
+        val result = authorizedCredentialService.signDocuments()
         assertTrue(result.isSuccess)
 
         val signedDocuments = result.getOrThrow()
@@ -92,7 +96,6 @@ class CredentialAuthorizedImplTest {
     @Test
     fun `test signDocuments returns the SignedDocuments for SCAL2`() = runTest {
         val mockClient = mockk<CSCClient>(relaxed = true)
-        val signingAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256
         val documentsToSignList = listOf<DocumentToSign>(mockk())
         val documentDigestList = mockk<DocumentDigestList> {
             every { hashAlgorithmOID } returns HashAlgorithmOID.SHA_256
@@ -102,37 +105,38 @@ class CredentialAuthorizedImplTest {
             every { signatures } returns listOf<Signature>(mockk())
         }
         val signedDocumentsInputStreams = listOf<InputStream>(mockk())
-        val credentialAuthorized = mockk<CredentialAuthorized.SCAL2> {
-            every { credentialCertificate } returns mockk()
-            coEvery {
-                with(mockClient) {
-                    signHash(signingAlgorithmOID)
-                }
-            } returns Result.success(signatureList)
-
-            coEvery {
-                with(mockClient) {
-                    getSignedDocuments(
-                        documents = documentsToSignList,
-                        signatures = signatureList.signatures,
-                        credentialCertificate = credentialCertificate,
-//                        hashAlgorithmOID = documentDigestList.hashAlgorithmOID,
-                        hashAlgorithmOID = any(), // TODO: Fix this
-                        signatureTimestamp = documentDigestList.hashCalculationTime
-                    )
-                }
-            } returns signedDocumentsInputStreams
-        }
+        val credentialAuthorized = mockk<CredentialAuthorized.SCAL2>()
 
         val authorizedCredentialService = CredentialAuthorizedImpl(
             client = mockClient,
             documentDigestList = documentDigestList,
             documentsToSign = documentsToSignList,
-            credentialAuthorized = credentialAuthorized
+            credentialAuthorized = credentialAuthorized,
+            signingAlgorithm = SigningAlgorithmOID.ECDSA_SHA256,
         )
 
+        every { credentialAuthorized.credentialCertificate } returns mockk()
+        coEvery {
+            with(mockClient) {
+                credentialAuthorized.signHash(authorizedCredentialService.signingAlgorithm)
+            }
+        } returns Result.success(signatureList)
 
-        val result = authorizedCredentialService.signDocuments(signingAlgorithmOID)
+        coEvery {
+            with(mockClient) {
+                getSignedDocuments(
+                    documents = documentsToSignList,
+                    signatures = signatureList.signatures,
+                    credentialCertificate = credentialAuthorized.credentialCertificate,
+//                        hashAlgorithmOID = documentDigestList.hashAlgorithmOID,
+                    hashAlgorithmOID = any(), // TODO: Fix this
+                    signatureTimestamp = documentDigestList.hashCalculationTime
+                )
+            }
+        } returns signedDocumentsInputStreams
+
+
+        val result = authorizedCredentialService.signDocuments()
         assertTrue(result.isSuccess)
 
         val signedDocuments = result.getOrThrow()

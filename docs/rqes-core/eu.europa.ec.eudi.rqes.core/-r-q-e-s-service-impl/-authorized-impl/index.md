@@ -3,13 +3,20 @@
 # AuthorizedImpl
 
 [androidJvm]\
-class [AuthorizedImpl](index.md)(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized) : [RQESService.Authorized](../../-r-q-e-s-service/-authorized/index.md)
+class [AuthorizedImpl](index.md)(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized, val hashAlgorithm: HashAlgorithmOID, val signingAlgorithm: SigningAlgorithmOID) : [RQESService.Authorized](../../-r-q-e-s-service/-authorized/index.md)
 
 ## Constructors
 
 | | |
 |---|---|
-| [AuthorizedImpl](-authorized-impl.md) | [androidJvm]<br>constructor(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized) |
+| [AuthorizedImpl](-authorized-impl.md) | [androidJvm]<br>constructor(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized, hashAlgorithm: HashAlgorithmOID, signingAlgorithm: SigningAlgorithmOID) |
+
+## Properties
+
+| Name | Summary |
+|---|---|
+| [hashAlgorithm](hash-algorithm.md) | [androidJvm]<br>val [hashAlgorithm](hash-algorithm.md): HashAlgorithmOID |
+| [signingAlgorithm](signing-algorithm.md) | [androidJvm]<br>val [signingAlgorithm](signing-algorithm.md): SigningAlgorithmOID |
 
 ## Functions
 

@@ -3,7 +3,7 @@
 # RQESServiceImpl
 
 [androidJvm]\
-constructor(serviceEndpointUrl: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), config: CSCClientConfig, clientFactory: () -&gt; HttpClient? = null)
+constructor(serviceEndpointUrl: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), config: CSCClientConfig, hashAlgorithm: HashAlgorithmOID, signingAlgorithm: SigningAlgorithmOID, clientFactory: () -&gt; HttpClient? = null)
 
 Creates a RQES service implementation.
 

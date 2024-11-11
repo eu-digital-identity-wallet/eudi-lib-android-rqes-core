@@ -80,6 +80,15 @@ val rqesService = RQESService(
         authFlowRedirectionURI = URI("rqes:redirect"),
         scaBaseURL = URL("https://example.com"),
     ),
+    // set the default hash algorithm to use when signing documents
+    hashAlgorithm = HashAlgorithmOID.SHA_256,
+    signingAlgorithm = SigningAlgorithmOID.RSA_SHA256,
+    // optionally provide a HttpClientFactory to create a HttpClient for the service
+    // this is useful for logging, testing, etc.
+    httpClientFactory = {
+        // create a HttpClient
+        HttpClient(/* Configure */)
+    }
 )
 ```
 
@@ -117,42 +126,52 @@ method.
 Finally, you can sign the documents by calling the `signDocuments` method.
 
 ```kotlin
-val credentials = authorizedService.listCredentials().getOrThrow()
 // Use the credentials to select the one you want to use
+val credentials = authorizedService.listCredentials().getOrThrow()
 // For example, select the first credential
-
 val credential = credentials.first()
+
 // Prepare the documents to sign
 val unsignedDocuments = UnsignedDocuments(
-    unsignedDocuments = listOf(
-        UnsignedDocument(
-            label = "Document to sign",
-            file = File("document.pdf"),
+    UnsignedDocument(
+        label = "Document to sign",
+        file = File("document.pdf"),
+        // Optionally,you can change the signing configuration if needed otherwise the
+        // default configuration will be used
+        signingConfig = UnsignedDocument.Config(
+            signatureFormat = SignatureFormat.P,
+            conformanceLevel = ConformanceLevel.ADES_B_B,
+            signedEnvelopeProperty = SignedEnvelopeProperty.ENVELOPED,
+            asicContainer = ASICContainer.NONE
         )
-    ),
-    hashAlgorithmOID = HashAlgorithmOID.SHA_256
+    )
 )
 
+
+// Use the credentialAuthorizationUrl to open a browser and let the user authorize the
+// credential
 val credentialAuthorizationUrl = authorizedService.getCredentialAuthorizationUrl(
     credential = credential,
     documents = unsignedDocuments,
 ).getOrThrow()
 
-// Use the credentialAuthorizationUrl to open a browser and let the user authorize the credential
-// and get the authorization code from the redirect URI query parameter
+// After the user has authorized the credential will be redirected to the
+// authFlowRedirectionURI with a query parameter named "code" containing the
+// authorization code
 val credentialAuthorizationCode = AuthorizationCode("credential-code")
 
-// Authorize the credential
-val authorizedCredential = authorizedService.authorizeCredential(authorizationCode).getOrThrow()
+val authorizedCredential =
+    authorizedService.authorizeCredential(authorizationCode).getOrThrow()
 
 // Sign the documents
-val signAlgorithm = SigningAlgorithmOID.ECDSA_SHA256
-val signedDocuments = authorizedCredential.signDocuments(signAlgorithm).getOrThrow()
+val signedDocuments = authorizedCredential.signDocuments().getOrThrow()
 
+// Manipulate the signed documents. For example, save them to disk
 signedDocuments.forEachIndexed { index, inputStream ->
     // Save the signed document
     inputStream.use { signedDocument ->
-        File("signed-document-$index.pdf").outputStream().use { signedDocument.copyTo(it) }
+        File("signed-document-$index.pdf").outputStream()
+            .use { signedDocument.copyTo(it) }
     }
 }
 ```

@@ -3,7 +3,7 @@
 # Config
 
 [androidJvm]\
-constructor(signatureFormat: SignatureFormat, conformanceLevel: ConformanceLevel, signingAlgorithm: SigningAlgorithmOID, signedEnvelopeProperty: SignedEnvelopeProperty, asicContainer: ASICContainer)
+constructor(signatureFormat: SignatureFormat, conformanceLevel: ConformanceLevel, signedEnvelopeProperty: SignedEnvelopeProperty, asicContainer: ASICContainer)
 
 #### Parameters
 
@@ -13,6 +13,5 @@ androidJvm
 |---|---|
 | signatureFormat | The signature format. |
 | conformanceLevel | The conformance level. |
-| signingAlgorithm | The signing algorithm. |
 | signedEnvelopeProperty | The signed envelope property. |
 | asicContainer | The ASiC container. |

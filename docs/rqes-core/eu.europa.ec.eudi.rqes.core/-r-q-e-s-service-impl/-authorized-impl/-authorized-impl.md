@@ -3,4 +3,4 @@
 # AuthorizedImpl
 
 [androidJvm]\
-constructor(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized)
+constructor(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized, hashAlgorithm: HashAlgorithmOID, signingAlgorithm: SigningAlgorithmOID)

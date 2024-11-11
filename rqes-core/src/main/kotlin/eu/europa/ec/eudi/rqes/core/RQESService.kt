@@ -20,6 +20,7 @@ import eu.europa.ec.eudi.rqes.AuthorizationCode
 import eu.europa.ec.eudi.rqes.CSCClientConfig
 import eu.europa.ec.eudi.rqes.CredentialInfo
 import eu.europa.ec.eudi.rqes.CredentialsListRequest
+import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.HttpsUrl
 import eu.europa.ec.eudi.rqes.RSSPMetadata
 import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
@@ -34,8 +35,16 @@ import io.ktor.client.HttpClient
  *
  * HTTP client factory should be used. This property is optional can be used to provide a custom
  * Ktor HTTP client factory, that can be used to create the HTTP client.
+ *
+ * @property hashAlgorithm The algorithm OID, for hashing the documents.
+ * @property signingAlgorithm The algorithm OID, for signing the documents.
  */
 interface RQESService {
+
+    val hashAlgorithm: HashAlgorithmOID
+
+    val signingAlgorithm: SigningAlgorithmOID
+
     /**
      * Get the RSSP metadata.
      * This method is used to get the RSSP metadata.
@@ -132,12 +141,9 @@ interface RQESService {
          * This method is used to sign the documents.
          * The documents are the list of documents that were passed to the [RQESService.Authorized.getCredentialAuthorizationUrl] method.
          * The documents are signed using the authorized credential.
-         * @param signingAlgorithmOID The algorithm OID. Implementations should use the default algorithm if this parameter is null.
          * @return The list of signed documents as a [Result] of [SignedDocuments]. The signed documents are the documents that were signed.
          */
-        suspend fun signDocuments(
-            signingAlgorithmOID: SigningAlgorithmOID,
-        ): Result<SignedDocuments>
+        suspend fun signDocuments(): Result<SignedDocuments>
     }
 
     companion object {
@@ -147,7 +153,15 @@ interface RQESService {
         operator fun invoke(
             serviceEndpointUrl: String,
             config: CSCClientConfig,
-            httpClientFactory: (() -> HttpClient)? = null
-        ): RQESService = RQESServiceImpl(serviceEndpointUrl, config, httpClientFactory)
+            hashAlgorithm: HashAlgorithmOID = HashAlgorithmOID.SHA_256,
+            signingAlgorithm: SigningAlgorithmOID = SigningAlgorithmOID.RSA_SHA256,
+            httpClientFactory: (() -> HttpClient)? = null,
+        ): RQESService = RQESServiceImpl(
+            serviceEndpointUrl,
+            config,
+            hashAlgorithm,
+            signingAlgorithm,
+            httpClientFactory
+        )
     }
 }

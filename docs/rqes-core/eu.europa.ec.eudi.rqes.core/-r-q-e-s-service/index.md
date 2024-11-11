@@ -27,6 +27,13 @@ HTTP client factory should be used. This property is optional can be used to pro
 | [Companion](-companion/index.md) | [androidJvm]<br>object [Companion](-companion/index.md) |
 | [CredentialAuthorized](-credential-authorized/index.md) | [androidJvm]<br>interface [CredentialAuthorized](-credential-authorized/index.md)<br>The credential authorized interface. This interface provides the methods to interact with the authorized credential. The authorized credential is used to sign the documents. |
 
+## Properties
+
+| Name | Summary |
+|---|---|
+| [hashAlgorithm](hash-algorithm.md) | [androidJvm]<br>abstract val [hashAlgorithm](hash-algorithm.md): HashAlgorithmOID<br>The algorithm OID, for hashing the documents. |
+| [signingAlgorithm](signing-algorithm.md) | [androidJvm]<br>abstract val [signingAlgorithm](signing-algorithm.md): SigningAlgorithmOID<br>The algorithm OID, for signing the documents. |
+
 ## Functions
 
 | Name | Summary |

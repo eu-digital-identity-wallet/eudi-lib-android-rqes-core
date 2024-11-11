@@ -26,7 +26,7 @@ androidJvm
 
 | Name | Summary |
 |---|---|
-| [Config](-config/index.md) | [androidJvm]<br>data class [Config](-config/index.md)(val signatureFormat: SignatureFormat, val conformanceLevel: ConformanceLevel, val signingAlgorithm: SigningAlgorithmOID, val signedEnvelopeProperty: SignedEnvelopeProperty, val asicContainer: ASICContainer)<br>Configuration for the signing process. |
+| [Config](-config/index.md) | [androidJvm]<br>data class [Config](-config/index.md)(val signatureFormat: SignatureFormat, val conformanceLevel: ConformanceLevel, val signedEnvelopeProperty: SignedEnvelopeProperty, val asicContainer: ASICContainer)<br>Configuration for the signing process. |
 
 ## Properties
 

@@ -20,10 +20,12 @@ import eu.europa.ec.eudi.rqes.AuthorizationCode
 import eu.europa.ec.eudi.rqes.AuthorizationRequestPrepared
 import eu.europa.ec.eudi.rqes.CSCClient
 import eu.europa.ec.eudi.rqes.CSCClientConfig
+import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.HttpsUrl
 import eu.europa.ec.eudi.rqes.OAuth2Client
 import eu.europa.ec.eudi.rqes.ServiceAccessAuthorized
 import eu.europa.ec.eudi.rqes.ServiceAuthorizationRequestPrepared
+import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -55,7 +57,9 @@ class RQESServiceImplTest {
                 client = OAuth2Client.Public("client-id"),
                 authFlowRedirectionURI = URI("rqes:redirect"),
                 scaBaseURL = URL("https://example.com/sca"),
-            )
+            ),
+            hashAlgorithm = HashAlgorithmOID.SHA_256,
+            signingAlgorithm = SigningAlgorithmOID.RSA_SHA256,
         )
 
         mockkObject(CSCClient.Companion)

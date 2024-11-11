@@ -26,9 +26,11 @@ import eu.europa.ec.eudi.rqes.CredentialID
 import eu.europa.ec.eudi.rqes.CredentialInfo
 import eu.europa.ec.eudi.rqes.CredentialRef
 import eu.europa.ec.eudi.rqes.DocumentDigestList
+import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.HttpsUrl
 import eu.europa.ec.eudi.rqes.HttpsUrl.Companion.invoke
 import eu.europa.ec.eudi.rqes.ServiceAccessAuthorized
+import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import eu.europa.ec.eudi.rqes.core.RQESServiceImpl.AuthorizedImpl
 import io.mockk.coEvery
 import io.mockk.every
@@ -55,8 +57,9 @@ class AuthorizedImplTest {
         authorizedService = AuthorizedImpl(
             serverState = serverState,
             client = mockClient,
-            serviceAccessAuthorized = serviceAccessAuthorized
-
+            serviceAccessAuthorized = serviceAccessAuthorized,
+            hashAlgorithm = HashAlgorithmOID.SHA_256,
+            signingAlgorithm = SigningAlgorithmOID.ECDSA_SHA256,
         )
     }
 
@@ -102,7 +105,7 @@ class AuthorizedImplTest {
                 )
             )
             val documents = UnsignedDocuments(listOf(document))
-            val documentsList = documents.asDocumentToSignList
+            val documentsList = documents.asDocumentToSignList(authorizedService.signingAlgorithm)
             val credentialInfo = mockk<CredentialInfo>(relaxed = true) {
                 every { credentialID } returns CredentialID("credential-id")
                 every { certificate } returns mockk()
@@ -113,7 +116,7 @@ class AuthorizedImplTest {
                 mockClient.calculateDocumentHashes(
                     documents = documentsList,
                     credentialCertificate = credentialInfo.certificate,
-                    hashAlgorithmOID = documents.hashAlgorithmOID,
+                    hashAlgorithmOID = authorizedService.hashAlgorithm,
                 )
             } returns documentDigestList
 

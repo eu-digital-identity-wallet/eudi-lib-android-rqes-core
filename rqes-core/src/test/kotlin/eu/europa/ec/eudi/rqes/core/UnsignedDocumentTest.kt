@@ -36,13 +36,12 @@ class UnsignedDocumentTest {
             signingConfig = UnsignedDocument.Config(
                 signatureFormat = SignatureFormat.X,
                 conformanceLevel = ConformanceLevel.ADES_T,
-                signingAlgorithm = SigningAlgorithmOID.DSA,
                 signedEnvelopeProperty = SignedEnvelopeProperty.DETACHED,
                 asicContainer = ASICContainer.ASIC_S,
             )
         )
 
-        val documentToSign = unsignedDocument.asDocumentToSign
+        val documentToSign = unsignedDocument.asDocumentToSign(SigningAlgorithmOID.DSA)
 
         assertEquals(SignatureFormat.X, documentToSign.signatureFormat)
         assertEquals(ConformanceLevel.ADES_T, documentToSign.conformanceLevel)

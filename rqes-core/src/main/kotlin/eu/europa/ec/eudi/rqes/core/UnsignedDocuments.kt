@@ -17,23 +17,29 @@
 package eu.europa.ec.eudi.rqes.core
 
 import eu.europa.ec.eudi.rqes.DocumentToSign
-import eu.europa.ec.eudi.rqes.HashAlgorithmOID
+import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 
 /**
  * A list of [UnsignedDocument]s to be signed.
  * @constructor Creates a new [UnsignedDocuments] with the given list of [UnsignedDocument]s and hash algorithm.
  *
  * @param unsignedDocuments The list of [UnsignedDocument]s to be signed.
- * @param hashAlgorithmOID The hash algorithm to be used to hash the documents.
- *
- * @property hashAlgorithmOID The hash algorithm to be used to hash the documents.
  */
 class UnsignedDocuments(
-    unsignedDocuments: List<UnsignedDocument>,
-    val hashAlgorithmOID: HashAlgorithmOID = HashAlgorithmOID.SHA_256
+    unsignedDocuments: List<UnsignedDocument>
 ) : List<UnsignedDocument> by unsignedDocuments {
+
+    /**
+     * Creates a new [UnsignedDocuments] with the given vararg [UnsignedDocument]s.
+     *
+     * @param unsignedDocuments The vararg [UnsignedDocument]s to be signed.
+     */
+    constructor(vararg unsignedDocuments: UnsignedDocument) : this(unsignedDocuments.toList())
+
     /**
      * Converts this [UnsignedDocuments] to a list of [DocumentToSign]s.
      */
-    internal val asDocumentToSignList: List<DocumentToSign> = map { it.asDocumentToSign }
+    internal fun asDocumentToSignList(
+        signingAlgorithmOID: SigningAlgorithmOID
+    ): List<DocumentToSign> = map { it.asDocumentToSign(signingAlgorithmOID) }
 }

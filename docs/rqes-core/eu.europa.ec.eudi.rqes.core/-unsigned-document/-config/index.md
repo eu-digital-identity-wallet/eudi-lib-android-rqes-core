@@ -2,7 +2,7 @@
 
 # Config
 
-data class [Config](index.md)(val signatureFormat: SignatureFormat, val conformanceLevel: ConformanceLevel, val signingAlgorithm: SigningAlgorithmOID, val signedEnvelopeProperty: SignedEnvelopeProperty, val asicContainer: ASICContainer)
+data class [Config](index.md)(val signatureFormat: SignatureFormat, val conformanceLevel: ConformanceLevel, val signedEnvelopeProperty: SignedEnvelopeProperty, val asicContainer: ASICContainer)
 
 Configuration for the signing process.
 
@@ -14,7 +14,6 @@ androidJvm
 |---|---|
 | signatureFormat | The signature format. |
 | conformanceLevel | The conformance level. |
-| signingAlgorithm | The signing algorithm. |
 | signedEnvelopeProperty | The signed envelope property. |
 | asicContainer | The ASiC container. |
 
@@ -22,7 +21,7 @@ androidJvm
 
 | | |
 |---|---|
-| [Config](-config.md) | [androidJvm]<br>constructor(signatureFormat: SignatureFormat, conformanceLevel: ConformanceLevel, signingAlgorithm: SigningAlgorithmOID, signedEnvelopeProperty: SignedEnvelopeProperty, asicContainer: ASICContainer) |
+| [Config](-config.md) | [androidJvm]<br>constructor(signatureFormat: SignatureFormat, conformanceLevel: ConformanceLevel, signedEnvelopeProperty: SignedEnvelopeProperty, asicContainer: ASICContainer) |
 
 ## Types
 
@@ -38,4 +37,3 @@ androidJvm
 | [conformanceLevel](conformance-level.md) | [androidJvm]<br>val [conformanceLevel](conformance-level.md): ConformanceLevel<br>The conformance level. |
 | [signatureFormat](signature-format.md) | [androidJvm]<br>val [signatureFormat](signature-format.md): SignatureFormat<br>The signature format. |
 | [signedEnvelopeProperty](signed-envelope-property.md) | [androidJvm]<br>val [signedEnvelopeProperty](signed-envelope-property.md): SignedEnvelopeProperty<br>The signed envelope property. |
-| [signingAlgorithm](signing-algorithm.md) | [androidJvm]<br>val [signingAlgorithm](signing-algorithm.md): SigningAlgorithmOID<br>The signing algorithm. |

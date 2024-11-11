@@ -3,7 +3,20 @@
 # UnsignedDocuments
 
 [androidJvm]\
-constructor(unsignedDocuments: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[UnsignedDocument](../-unsigned-document/index.md)&gt;, hashAlgorithmOID: HashAlgorithmOID = HashAlgorithmOID.SHA_256)
+constructor(vararg unsignedDocuments: [UnsignedDocument](../-unsigned-document/index.md))
+
+Creates a new [UnsignedDocuments](index.md) with the given vararg [UnsignedDocument](../-unsigned-document/index.md)s.
+
+#### Parameters
+
+androidJvm
+
+| | |
+|---|---|
+| unsignedDocuments | The vararg [UnsignedDocument](../-unsigned-document/index.md)s to be signed. |
+
+[androidJvm]\
+constructor(unsignedDocuments: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[UnsignedDocument](../-unsigned-document/index.md)&gt;)
 
 Creates a new [UnsignedDocuments](index.md) with the given list of [UnsignedDocument](../-unsigned-document/index.md)s and hash algorithm.
 
@@ -14,4 +27,3 @@ androidJvm
 | | |
 |---|---|
 | unsignedDocuments | The list of [UnsignedDocument](../-unsigned-document/index.md)s to be signed. |
-| hashAlgorithmOID | The hash algorithm to be used to hash the documents. |

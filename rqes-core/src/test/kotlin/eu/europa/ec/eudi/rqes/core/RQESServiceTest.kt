@@ -17,7 +17,9 @@
 package eu.europa.ec.eudi.rqes.core
 
 import eu.europa.ec.eudi.rqes.CSCClientConfig
+import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.OAuth2Client
+import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import io.ktor.client.HttpClient
 import io.mockk.mockk
 import java.net.URI
@@ -51,6 +53,8 @@ class RQESServiceTest {
         assertIs<RQESServiceImpl>(rqesService)
         assertEquals("https://example.com/csc/v2", rqesService.serviceEndpointUrl)
         assertEquals(config, rqesService.config)
+        assertEquals(HashAlgorithmOID.SHA_256, rqesService.hashAlgorithm)
+        assertEquals(SigningAlgorithmOID.RSA_SHA256, rqesService.signingAlgorithm)
         assertEquals(mockkHttpClientFactory, rqesService.clientFactory)
     }
 
@@ -68,12 +72,40 @@ class RQESServiceTest {
         val rqesService = RQESService(
             serviceEndpointUrl = "https://example.com/csc/v2",
             config = config,
-
         )
 
         assertIs<RQESServiceImpl>(rqesService)
         assertEquals("https://example.com/csc/v2", rqesService.serviceEndpointUrl)
         assertEquals(config, rqesService.config)
+        assertEquals(HashAlgorithmOID.SHA_256, rqesService.hashAlgorithm)
+        assertEquals(SigningAlgorithmOID.RSA_SHA256, rqesService.signingAlgorithm)
+        assertNull(rqesService.clientFactory)
+    }
+
+
+    @Test
+    fun `Companion object construct RQESService with other hash and signing algorithms`() {
+
+        val config = CSCClientConfig(
+            client = OAuth2Client.Confidential.ClientSecretBasic(
+                clientId = "client-id",
+                clientSecret = "client-secret"
+            ),
+            authFlowRedirectionURI = URI("rqes:redirection"),
+            scaBaseURL = URL("https://example.com"),
+        )
+        val rqesService = RQESService(
+            serviceEndpointUrl = "https://example.com/csc/v2",
+            config = config,
+            hashAlgorithm = HashAlgorithmOID.SHA_512,
+            signingAlgorithm = SigningAlgorithmOID.RSA_SHA512,
+        )
+
+        assertIs<RQESServiceImpl>(rqesService)
+        assertEquals("https://example.com/csc/v2", rqesService.serviceEndpointUrl)
+        assertEquals(config, rqesService.config)
+        assertEquals(HashAlgorithmOID.SHA_512, rqesService.hashAlgorithm)
+        assertEquals(SigningAlgorithmOID.RSA_SHA512, rqesService.signingAlgorithm)
         assertNull(rqesService.clientFactory)
     }
 

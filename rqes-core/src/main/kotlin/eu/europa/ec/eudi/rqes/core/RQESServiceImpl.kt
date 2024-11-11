@@ -28,6 +28,7 @@ import eu.europa.ec.eudi.rqes.CredentialsListRequest
 import eu.europa.ec.eudi.rqes.DefaultHttpClientFactory
 import eu.europa.ec.eudi.rqes.DocumentDigestList
 import eu.europa.ec.eudi.rqes.DocumentToSign
+import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.HttpsUrl
 import eu.europa.ec.eudi.rqes.RSSPMetadata
 import eu.europa.ec.eudi.rqes.ServiceAccessAuthorized
@@ -54,6 +55,8 @@ import kotlin.uuid.Uuid
 class RQESServiceImpl(
     @VisibleForTesting internal val serviceEndpointUrl: String,
     @VisibleForTesting internal val config: CSCClientConfig,
+    override val hashAlgorithm: HashAlgorithmOID,
+    override val signingAlgorithm: SigningAlgorithmOID,
     @VisibleForTesting internal val clientFactory: (() -> HttpClient)? = null
 ) : RQESService {
 
@@ -129,6 +132,8 @@ class RQESServiceImpl(
                             serverState = serverState,
                             client = this@with,
                             serviceAccessAuthorized = authorized,
+                            hashAlgorithm = this@RQESServiceImpl.hashAlgorithm,
+                            signingAlgorithm = this@RQESServiceImpl.signingAlgorithm
                         )
                     )
                 }
@@ -144,6 +149,8 @@ class RQESServiceImpl(
         @VisibleForTesting internal val serverState: String,
         @VisibleForTesting internal val client: CSCClient,
         @VisibleForTesting internal val serviceAccessAuthorized: ServiceAccessAuthorized,
+        val hashAlgorithm: HashAlgorithmOID,
+        val signingAlgorithm: SigningAlgorithmOID,
     ) : RQESService.Authorized {
 
         @VisibleForTesting
@@ -175,10 +182,12 @@ class RQESServiceImpl(
         ): Result<HttpsUrl> {
             return try {
                 with(client) {
-                    this@AuthorizedImpl.documentsToSign = documents.asDocumentToSignList
+                    this@AuthorizedImpl.documentsToSign = documents.asDocumentToSignList(
+                        signingAlgorithmOID = signingAlgorithm
+                    )
                     this@AuthorizedImpl.documentDigestList = calculateDocumentHashes(
                         documents = documentsToSign,
-                        hashAlgorithmOID = documents.hashAlgorithmOID,
+                        hashAlgorithmOID = hashAlgorithm,
                         credentialCertificate = credential.certificate
                     )
                     val authorizationCodeURL = serviceAccessAuthorized
@@ -216,6 +225,7 @@ class RQESServiceImpl(
                             documentsToSign = documentsToSign,
                             documentDigestList = documentDigestList,
                             credentialAuthorized = authorized,
+                            signingAlgorithm = signingAlgorithm
                         )
                     )
                 }
@@ -231,21 +241,22 @@ class RQESServiceImpl(
         @VisibleForTesting internal val documentsToSign: List<DocumentToSign>,
         @VisibleForTesting internal val documentDigestList: DocumentDigestList,
         @VisibleForTesting internal val credentialAuthorized: CredentialAuthorized,
+        val signingAlgorithm: SigningAlgorithmOID
     ) : RQESService.CredentialAuthorized {
-        override suspend fun signDocuments(
-            signingAlgorithmOID: SigningAlgorithmOID,
-        ): Result<SignedDocuments> {
+        override suspend fun signDocuments(): Result<SignedDocuments> {
             return try {
                 with(client) {
                     val signatureList = when (credentialAuthorized) {
                         is CredentialAuthorized.SCAL1 -> credentialAuthorized
                             .signHash(
                                 documentDigestList = documentDigestList,
-                                signingAlgorithmOID = signingAlgorithmOID
+                                signingAlgorithmOID = signingAlgorithm
                             )
 
                         is CredentialAuthorized.SCAL2 -> credentialAuthorized
-                            .signHash(signingAlgorithmOID)
+                            .signHash(
+                                signingAlgorithmOID = signingAlgorithm
+                            )
 
                     }.getOrThrow()
 

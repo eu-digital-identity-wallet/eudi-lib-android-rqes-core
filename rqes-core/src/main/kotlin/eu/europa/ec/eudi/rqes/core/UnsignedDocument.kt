@@ -45,20 +45,17 @@ data class UnsignedDocument(
      * Configuration for the signing process.
      * @param signatureFormat The signature format.
      * @param conformanceLevel The conformance level.
-     * @param signingAlgorithm The signing algorithm.
      * @param signedEnvelopeProperty The signed envelope property.
      * @param asicContainer The ASiC container.
      *
      * @property signatureFormat The signature format.
      * @property conformanceLevel The conformance level.
-     * @property signingAlgorithm The signing algorithm.
      * @property signedEnvelopeProperty The signed envelope property.
      * @property asicContainer The ASiC container.
      */
     data class Config(
         val signatureFormat: SignatureFormat,
         val conformanceLevel: ConformanceLevel,
-        val signingAlgorithm: SigningAlgorithmOID,
         val signedEnvelopeProperty: SignedEnvelopeProperty,
         val asicContainer: ASICContainer
     ) {
@@ -71,7 +68,6 @@ data class UnsignedDocument(
             val DEFAULT = Config(
                 signatureFormat = SignatureFormat.P,
                 conformanceLevel = ConformanceLevel.ADES_B_B,
-                signingAlgorithm = SigningAlgorithmOID.Companion.RSA,
                 signedEnvelopeProperty = SignedEnvelopeProperty.ENVELOPED,
                 asicContainer = ASICContainer.NONE
             )
@@ -81,13 +77,13 @@ data class UnsignedDocument(
     /**
      * Converts this [UnsignedDocument] to a [DocumentToSign].
      */
-    internal val asDocumentToSign: DocumentToSign
-        get() = DocumentToSign(
+    internal fun asDocumentToSign(signingAlgorithmOID: SigningAlgorithmOID): DocumentToSign =
+        DocumentToSign(
             file = Document(file, label),
             signatureFormat = signingConfig.signatureFormat,
-            signAlgo = signingConfig.signingAlgorithm,
             conformanceLevel = signingConfig.conformanceLevel,
             signedEnvelopeProperty = signingConfig.signedEnvelopeProperty,
             asicContainer = signingConfig.asicContainer,
+            signAlgo = signingAlgorithmOID,
         )
 }
