@@ -38,6 +38,8 @@ class UnsignedDocuments(
 
     /**
      * Converts this [UnsignedDocuments] to a list of [DocumentToSign]s.
+     * @param signingAlgorithmOID The OID of the signing algorithm to be used for the signing process.
+     * @return The list of [DocumentToSign]s.
      */
     internal fun asDocumentToSignList(
         signingAlgorithmOID: SigningAlgorithmOID

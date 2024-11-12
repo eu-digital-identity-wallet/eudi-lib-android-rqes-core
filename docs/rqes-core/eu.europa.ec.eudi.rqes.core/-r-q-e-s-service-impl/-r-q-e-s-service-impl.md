@@ -15,4 +15,6 @@ androidJvm
 |---|---|
 | serviceEndpointUrl | The RQES service endpoint URL. |
 | config | The RQES service configuration. |
+| hashAlgorithm | The algorithm OID, for hashing the documents. |
+| signingAlgorithm | The algorithm OID, for signing the documents. |
 | clientFactory | The HTTP client factory. If this property is null, the default HTTP client factory will be used. |

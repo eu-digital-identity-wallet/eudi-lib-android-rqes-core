@@ -76,6 +76,8 @@ data class UnsignedDocument(
 
     /**
      * Converts this [UnsignedDocument] to a [DocumentToSign].
+     * @param signingAlgorithmOID The signing algorithm OID.
+     * @return The [DocumentToSign] object.
      */
     internal fun asDocumentToSign(signingAlgorithmOID: SigningAlgorithmOID): DocumentToSign =
         DocumentToSign(

@@ -149,6 +149,13 @@ interface RQESService {
     companion object {
         /**
          * Create the RQES service.
+         *
+         * @param serviceEndpointUrl The service endpoint URL.
+         * @param config The CSC client configuration.
+         * @param hashAlgorithm The hash algorithm OID.
+         * @param signingAlgorithm The signing algorithm OID.
+         * @param httpClientFactory The HTTP client factory.
+         * @return The RQES service.
          */
         operator fun invoke(
             serviceEndpointUrl: String,

@@ -80,7 +80,7 @@ val rqesService = RQESService(
         authFlowRedirectionURI = URI("rqes:redirect"),
         scaBaseURL = URL("https://example.com"),
     ),
-    // set the default hash algorithm to use when signing documents
+    // set the hashing and singing algorithms that will be used
     hashAlgorithm = HashAlgorithmOID.SHA_256,
     signingAlgorithm = SigningAlgorithmOID.RSA_SHA256,
     // optionally provide a HttpClientFactory to create a HttpClient for the service

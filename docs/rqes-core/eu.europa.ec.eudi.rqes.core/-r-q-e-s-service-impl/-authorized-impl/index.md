@@ -2,21 +2,34 @@
 
 # AuthorizedImpl
 
-[androidJvm]\
 class [AuthorizedImpl](index.md)(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized, val hashAlgorithm: HashAlgorithmOID, val signingAlgorithm: SigningAlgorithmOID) : [RQESService.Authorized](../../-r-q-e-s-service/-authorized/index.md)
+
+The authorized service implementation.
+
+#### Parameters
+
+androidJvm
+
+| | |
+|---|---|
+| serverState | The server state. |
+| client | The client. |
+| serviceAccessAuthorized | The service access authorized. |
+| hashAlgorithm | The algorithm OID, for hashing the documents. |
+| signingAlgorithm | The algorithm OID, for signing the documents. |
 
 ## Constructors
 
 | | |
 |---|---|
-| [AuthorizedImpl](-authorized-impl.md) | [androidJvm]<br>constructor(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized, hashAlgorithm: HashAlgorithmOID, signingAlgorithm: SigningAlgorithmOID) |
+| [AuthorizedImpl](-authorized-impl.md) | [androidJvm]<br>constructor(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized, hashAlgorithm: HashAlgorithmOID, signingAlgorithm: SigningAlgorithmOID)<br>Creates an authorized service implementation. |
 
 ## Properties
 
 | Name | Summary |
 |---|---|
-| [hashAlgorithm](hash-algorithm.md) | [androidJvm]<br>val [hashAlgorithm](hash-algorithm.md): HashAlgorithmOID |
-| [signingAlgorithm](signing-algorithm.md) | [androidJvm]<br>val [signingAlgorithm](signing-algorithm.md): SigningAlgorithmOID |
+| [hashAlgorithm](hash-algorithm.md) | [androidJvm]<br>val [hashAlgorithm](hash-algorithm.md): HashAlgorithmOID<br>The algorithm OID, for hashing the documents. |
+| [signingAlgorithm](signing-algorithm.md) | [androidJvm]<br>val [signingAlgorithm](signing-algorithm.md): SigningAlgorithmOID<br>The algorithm OID, for signing the documents. |
 
 ## Functions
 

@@ -14,6 +14,8 @@ androidJvm
 |---|---|
 | serviceEndpointUrl | The RQES service endpoint URL. |
 | config | The RQES service configuration. |
+| hashAlgorithm | The algorithm OID, for hashing the documents. |
+| signingAlgorithm | The algorithm OID, for signing the documents. |
 | clientFactory | The HTTP client factory. If this property is null, the default HTTP client factory will be used. |
 
 ## Constructors
@@ -26,8 +28,8 @@ androidJvm
 
 | Name | Summary |
 |---|---|
-| [AuthorizedImpl](-authorized-impl/index.md) | [androidJvm]<br>class [AuthorizedImpl](-authorized-impl/index.md)(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized, val hashAlgorithm: HashAlgorithmOID, val signingAlgorithm: SigningAlgorithmOID) : [RQESService.Authorized](../-r-q-e-s-service/-authorized/index.md) |
-| [CredentialAuthorizedImpl](-credential-authorized-impl/index.md) | [androidJvm]<br>class [CredentialAuthorizedImpl](-credential-authorized-impl/index.md)(client: CSCClient, documentsToSign: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;DocumentToSign&gt;, documentDigestList: DocumentDigestList, credentialAuthorized: CredentialAuthorized, val signingAlgorithm: SigningAlgorithmOID) : [RQESService.CredentialAuthorized](../-r-q-e-s-service/-credential-authorized/index.md) |
+| [AuthorizedImpl](-authorized-impl/index.md) | [androidJvm]<br>class [AuthorizedImpl](-authorized-impl/index.md)(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized, val hashAlgorithm: HashAlgorithmOID, val signingAlgorithm: SigningAlgorithmOID) : [RQESService.Authorized](../-r-q-e-s-service/-authorized/index.md)<br>The authorized service implementation. |
+| [CredentialAuthorizedImpl](-credential-authorized-impl/index.md) | [androidJvm]<br>class [CredentialAuthorizedImpl](-credential-authorized-impl/index.md)(client: CSCClient, documentsToSign: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;DocumentToSign&gt;, documentDigestList: DocumentDigestList, credentialAuthorized: CredentialAuthorized, val signingAlgorithm: SigningAlgorithmOID) : [RQESService.CredentialAuthorized](../-r-q-e-s-service/-credential-authorized/index.md)<br>The credential authorized implementation. |
 
 ## Properties
 

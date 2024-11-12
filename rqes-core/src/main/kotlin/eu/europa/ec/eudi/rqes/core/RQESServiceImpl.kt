@@ -45,11 +45,15 @@ import kotlin.uuid.Uuid
  *
  * @property serviceEndpointUrl The RQES service endpoint URL.
  * @property config The RQES service configuration.
+ * @property hashAlgorithm The algorithm OID, for hashing the documents.
+ * @property signingAlgorithm The algorithm OID, for signing the documents.
  * @property clientFactory The HTTP client factory. If this property is null, the default HTTP client factory will be used.
  *
  * @constructor Creates a RQES service implementation.
  * @param serviceEndpointUrl The RQES service endpoint URL.
  * @param config The RQES service configuration.
+ * @param hashAlgorithm The algorithm OID, for hashing the documents.
+ * @param signingAlgorithm The algorithm OID, for signing the documents.
  * @param clientFactory The HTTP client factory. If this property is null, the default HTTP client factory will be used.
  */
 class RQESServiceImpl(
@@ -145,6 +149,25 @@ class RQESServiceImpl(
     }
 
 
+    /**
+     * The authorized service implementation.
+     *
+     * @property serverState The server state.
+     * @property client The client.
+     * @property serviceAccessAuthorized The service access authorized.
+     * @property hashAlgorithm The algorithm OID, for hashing the documents.
+     * @property signingAlgorithm The algorithm OID, for signing the documents.
+     * @property documentsToSign The documents to sign.
+     * @property documentDigestList The document digest list.
+     * @property credAuthRequestPrepared The credential authorization request prepared.
+     *
+     * @constructor Creates an authorized service implementation.
+     * @param serverState The server state.
+     * @param client The client.
+     * @param serviceAccessAuthorized The service access authorized.
+     * @param hashAlgorithm The algorithm OID, for hashing the documents.
+     * @param signingAlgorithm The algorithm OID, for signing the documents.
+     */
     class AuthorizedImpl(
         @VisibleForTesting internal val serverState: String,
         @VisibleForTesting internal val client: CSCClient,
@@ -236,6 +259,22 @@ class RQESServiceImpl(
         }
     }
 
+    /**
+     * The credential authorized implementation.
+     *
+     * @property client The client.
+     * @property documentsToSign The documents to sign.
+     * @property documentDigestList The document digest list.
+     * @property credentialAuthorized The credential authorized.
+     * @property signingAlgorithm The algorithm OID, for signing the documents.
+     *
+     * @constructor Creates a credential authorized implementation.
+     * @param client The client.
+     * @param documentsToSign The documents to sign.
+     * @param documentDigestList The document digest list.
+     * @param credentialAuthorized The credential authorized.
+     * @param signingAlgorithm The algorithm OID, for signing the documents.
+     */
     class CredentialAuthorizedImpl(
         @VisibleForTesting internal val client: CSCClient,
         @VisibleForTesting internal val documentsToSign: List<DocumentToSign>,
