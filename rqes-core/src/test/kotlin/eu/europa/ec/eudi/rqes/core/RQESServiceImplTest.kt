@@ -30,6 +30,7 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
+import io.mockk.slot
 import io.mockk.spyk
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -43,6 +44,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class RQESServiceImplTest {
 
@@ -100,18 +102,21 @@ class RQESServiceImplTest {
     fun `verify getServiceAuthorizationUrl initializes the serviceAuthRequestPrepared property and return the authorization url `() =
         runTest {
             assertNull(service.serviceAuthRequestPrepared)
-
+            val stateSlot = slot<String>()
             val mockAuthorizationCodeURL = HttpsUrl("https://example.com/auth").getOrThrow()
-            val authorizationRequestPrepared = mockk<AuthorizationRequestPrepared>() {
+            val authorizationRequestPrepared = mockk<AuthorizationRequestPrepared> {
                 every { authorizationCodeURL } returns mockAuthorizationCodeURL
             }
             val serviceAuthorizationRequestPrepared =
                 ServiceAuthorizationRequestPrepared(authorizationRequestPrepared)
-            coEvery { mockClient.prepareServiceAuthorizationRequest() } returns Result.success(
+            coEvery { mockClient.prepareServiceAuthorizationRequest(capture(stateSlot)) } returns Result.success(
                 serviceAuthorizationRequestPrepared
             )
 
             val authorizationUrl = service.getServiceAuthorizationUrl().getOrThrow()
+
+            assertTrue(stateSlot.isCaptured)
+            assertEquals(service.serverState, stateSlot.captured)
 
             assertEquals(serviceAuthorizationRequestPrepared, service.serviceAuthRequestPrepared)
             assertEquals(mockAuthorizationCodeURL, authorizationUrl)

@@ -111,9 +111,11 @@ class RQESServiceImpl(
         serverState = Uuid.random().toString()
         return try {
             with(getOrCreateClient()) {
-                val authorizationCodeURL = prepareServiceAuthorizationRequest().getOrThrow()
-                    .also { serviceAuthRequestPrepared = it }
-                    .value.authorizationCodeURL
+                val authorizationCodeURL =
+                    prepareServiceAuthorizationRequest(walletState = serverState)
+                        .getOrThrow()
+                        .also { serviceAuthRequestPrepared = it }
+                        .value.authorizationCodeURL
                 Result.success(authorizationCodeURL)
             }
         } catch (e: Throwable) {
