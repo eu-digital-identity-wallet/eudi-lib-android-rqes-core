@@ -2,7 +2,7 @@
 
 # RQESServiceImpl
 
-class [RQESServiceImpl](index.md)(serviceEndpointUrl: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), config: CSCClientConfig, val hashAlgorithm: HashAlgorithmOID, val signingAlgorithm: SigningAlgorithmOID, clientFactory: () -&gt; HttpClient? = null) : [RQESService](../-r-q-e-s-service/index.md)
+class [RQESServiceImpl](index.md)(serviceEndpointUrl: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), config: CSCClientConfig, val hashAlgorithm: HashAlgorithmOID, clientFactory: () -&gt; HttpClient? = null) : [RQESService](../-r-q-e-s-service/index.md)
 
 The RQES service implementation. This class provides the implementation of the RQES service.
 
@@ -22,13 +22,14 @@ androidJvm
 
 | | |
 |---|---|
-| [RQESServiceImpl](-r-q-e-s-service-impl.md) | [androidJvm]<br>constructor(serviceEndpointUrl: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), config: CSCClientConfig, hashAlgorithm: HashAlgorithmOID, signingAlgorithm: SigningAlgorithmOID, clientFactory: () -&gt; HttpClient? = null)<br>Creates a RQES service implementation. |
+| [RQESServiceImpl](-r-q-e-s-service-impl.md) | [androidJvm]<br>constructor(serviceEndpointUrl: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), config: CSCClientConfig, hashAlgorithm: HashAlgorithmOID, clientFactory: () -&gt; HttpClient? = null)<br>Creates a RQES service implementation. |
 
 ## Types
 
 | Name | Summary |
 |---|---|
-| [AuthorizedImpl](-authorized-impl/index.md) | [androidJvm]<br>class [AuthorizedImpl](-authorized-impl/index.md)(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized, val hashAlgorithm: HashAlgorithmOID, val signingAlgorithm: SigningAlgorithmOID) : [RQESService.Authorized](../-r-q-e-s-service/-authorized/index.md)<br>The authorized service implementation. |
+| [AuthorizedImpl](-authorized-impl/index.md) | [androidJvm]<br>class [AuthorizedImpl](-authorized-impl/index.md)(serverState: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), client: CSCClient, serviceAccessAuthorized: ServiceAccessAuthorized, val hashAlgorithm: HashAlgorithmOID) : [RQESService.Authorized](../-r-q-e-s-service/-authorized/index.md)<br>The authorized service implementation. |
+| [Companion](-companion/index.md) | [androidJvm]<br>object [Companion](-companion/index.md) |
 | [CredentialAuthorizedImpl](-credential-authorized-impl/index.md) | [androidJvm]<br>class [CredentialAuthorizedImpl](-credential-authorized-impl/index.md)(client: CSCClient, documentsToSign: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;DocumentToSign&gt;, documentDigestList: DocumentDigestList, credentialAuthorized: CredentialAuthorized, val signingAlgorithm: SigningAlgorithmOID) : [RQESService.CredentialAuthorized](../-r-q-e-s-service/-credential-authorized/index.md)<br>The credential authorized implementation. |
 
 ## Properties
@@ -36,7 +37,6 @@ androidJvm
 | Name | Summary |
 |---|---|
 | [hashAlgorithm](hash-algorithm.md) | [androidJvm]<br>open override val [hashAlgorithm](hash-algorithm.md): HashAlgorithmOID<br>The algorithm OID, for hashing the documents. |
-| [signingAlgorithm](signing-algorithm.md) | [androidJvm]<br>open override val [signingAlgorithm](signing-algorithm.md): SigningAlgorithmOID<br>The algorithm OID, for signing the documents. |
 
 ## Functions
 

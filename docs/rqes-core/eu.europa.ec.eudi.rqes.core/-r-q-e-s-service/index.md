@@ -32,7 +32,6 @@ HTTP client factory should be used. This property is optional can be used to pro
 | Name | Summary |
 |---|---|
 | [hashAlgorithm](hash-algorithm.md) | [androidJvm]<br>abstract val [hashAlgorithm](hash-algorithm.md): HashAlgorithmOID<br>The algorithm OID, for hashing the documents. |
-| [signingAlgorithm](signing-algorithm.md) | [androidJvm]<br>abstract val [signingAlgorithm](signing-algorithm.md): SigningAlgorithmOID<br>The algorithm OID, for signing the documents. |
 
 ## Functions
 

@@ -52,7 +52,6 @@ class ExtensionsTest {
             client = mockClient,
             serviceAccessAuthorized = serviceAccessAuthorized,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
-            signingAlgorithm = SigningAlgorithmOID.ECDSA_SHA256,
         )
     }
 
@@ -72,12 +71,13 @@ class ExtensionsTest {
         val signatureList = mockk<SignaturesList> {
             every { signatures } returns listOf<Signature>(mockk())
         }
+        authorizedService.signingAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256
         val signedDocumentsInputStreams = listOf<InputStream>(mockk())
-        val credentialAuthorized = mockk<CredentialAuthorized.SCAL2>() {
+        val credentialAuthorized = mockk<CredentialAuthorized.SCAL2> {
             every { credentialCertificate } returns mockk()
             coEvery {
                 with(mockClient) {
-                    signHash(authorizedService.signingAlgorithm)
+                    signHash(authorizedService.signingAlgorithmOID!!)
                 }
             } returns Result.success(signatureList)
         }

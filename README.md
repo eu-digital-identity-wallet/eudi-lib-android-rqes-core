@@ -80,9 +80,9 @@ val rqesService = RQESService(
         authFlowRedirectionURI = URI("rqes:redirect"),
         scaBaseURL = URL("https://example.com"),
     ),
-    // set the hashing and singing algorithms that will be used
-    hashAlgorithm = HashAlgorithmOID.SHA_256,
-    signingAlgorithm = SigningAlgorithmOID.RSA_SHA256,
+    // set the hashing algorithm that will be used
+    // default is SHA-256 as shown below
+    hashAlgorithm = HashAlgorithmOID.SHA_256, 
     // optionally provide a HttpClientFactory to create a HttpClient for the service
     // this is useful for logging, testing, etc.
     httpClientFactory = {
@@ -153,6 +153,10 @@ val unsignedDocuments = UnsignedDocuments(
 val credentialAuthorizationUrl = authorizedService.getCredentialAuthorizationUrl(
     credential = credential,
     documents = unsignedDocuments,
+    // optionally provide the signing algorithm to use when signing the documents
+    // if not provided the first available supported algorithm from the credential 
+    // will be used
+    signingAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256
 ).getOrThrow()
 
 // After the user has authorized the credential will be redirected to the

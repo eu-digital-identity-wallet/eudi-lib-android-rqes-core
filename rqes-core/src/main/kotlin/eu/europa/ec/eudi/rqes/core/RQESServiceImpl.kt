@@ -60,7 +60,6 @@ class RQESServiceImpl(
     @VisibleForTesting internal val serviceEndpointUrl: String,
     @VisibleForTesting internal val config: CSCClientConfig,
     override val hashAlgorithm: HashAlgorithmOID,
-    override val signingAlgorithm: SigningAlgorithmOID,
     @VisibleForTesting internal val clientFactory: (() -> HttpClient)? = null
 ) : RQESService {
 
@@ -139,7 +138,6 @@ class RQESServiceImpl(
                             client = this@with,
                             serviceAccessAuthorized = authorized,
                             hashAlgorithm = this@RQESServiceImpl.hashAlgorithm,
-                            signingAlgorithm = this@RQESServiceImpl.signingAlgorithm
                         )
                     )
                 }
@@ -158,7 +156,6 @@ class RQESServiceImpl(
      * @property client The client.
      * @property serviceAccessAuthorized The service access authorized.
      * @property hashAlgorithm The algorithm OID, for hashing the documents.
-     * @property signingAlgorithm The algorithm OID, for signing the documents.
      * @property documentsToSign The documents to sign.
      * @property documentDigestList The document digest list.
      * @property credAuthRequestPrepared The credential authorization request prepared.
@@ -168,14 +165,12 @@ class RQESServiceImpl(
      * @param client The client.
      * @param serviceAccessAuthorized The service access authorized.
      * @param hashAlgorithm The algorithm OID, for hashing the documents.
-     * @param signingAlgorithm The algorithm OID, for signing the documents.
      */
     class AuthorizedImpl(
         @VisibleForTesting internal val serverState: String,
         @VisibleForTesting internal val client: CSCClient,
         @VisibleForTesting internal val serviceAccessAuthorized: ServiceAccessAuthorized,
         val hashAlgorithm: HashAlgorithmOID,
-        val signingAlgorithm: SigningAlgorithmOID,
     ) : RQESService.Authorized {
 
         @VisibleForTesting
@@ -186,6 +181,9 @@ class RQESServiceImpl(
 
         @VisibleForTesting
         internal lateinit var credAuthRequestPrepared: CredentialAuthorizationRequestPrepared
+
+        @VisibleForTesting
+        internal var signingAlgorithmOID: SigningAlgorithmOID? = null
 
         override suspend fun listCredentials(request: CredentialsListRequest?): Result<List<CredentialInfo>> {
             return try {
@@ -204,32 +202,36 @@ class RQESServiceImpl(
         override suspend fun getCredentialAuthorizationUrl(
             credential: CredentialInfo,
             documents: UnsignedDocuments,
+            signingAlgorithmOID: SigningAlgorithmOID?
         ): Result<HttpsUrl> {
             return try {
-                with(client) {
-                    this@AuthorizedImpl.documentsToSign = documents.asDocumentToSignList(
-                        signingAlgorithmOID = signingAlgorithm
-                    )
-                    this@AuthorizedImpl.documentDigestList = calculateDocumentHashes(
-                        documents = documentsToSign,
-                        hashAlgorithmOID = hashAlgorithm,
-                        credentialCertificate = credential.certificate
-                    )
-                    val authorizationCodeURL = serviceAccessAuthorized
-                        .prepareCredentialAuthorizationRequest(
-                            credentialAuthorizationSubject = CredentialAuthorizationSubject(
-                                credentialRef = CredentialRef.ByCredentialID(credential.credentialID),
-                                documentDigestList = documentDigestList,
-                            ),
-                            walletState = serverState
-                        )
-                        .getOrThrow()
-                        .also { credAuthRequestPrepared = it }
-                        .authorizationRequestPrepared
-                        .authorizationCodeURL
+                (signingAlgorithmOID ?: credential.key.supportedAlgorithms.first())
+                    .also(this::signingAlgorithmOID::set)
+                    .let { signAlgorithm ->
+                        with(client) {
+                            this@AuthorizedImpl.documentsToSign = documents.asDocumentToSignList(
+                                signingAlgorithmOID = signAlgorithm
+                            )
+                            this@AuthorizedImpl.documentDigestList = calculateDocumentHashes(
+                                documents = documentsToSign,
+                                hashAlgorithmOID = hashAlgorithm,
+                                credentialCertificate = credential.certificate
+                            )
+                            val authorizationCodeURL = prepareCredentialAuthorizationRequest(
+                                credentialAuthorizationSubject = CredentialAuthorizationSubject(
+                                    credentialRef = CredentialRef.ByCredentialID(credential.credentialID),
+                                    documentDigestList = documentDigestList,
+                                ),
+                                walletState = serverState
+                            )
+                                .getOrThrow()
+                                .also { credAuthRequestPrepared = it }
+                                .authorizationRequestPrepared
+                                .authorizationCodeURL
 
-                    Result.success(authorizationCodeURL)
-                }
+                            Result.success(authorizationCodeURL)
+                        }
+                    }
             } catch (e: Throwable) {
                 Result.failure(e)
             }
@@ -237,22 +239,29 @@ class RQESServiceImpl(
 
         override suspend fun authorizeCredential(authorizationCode: AuthorizationCode): Result<RQESService.CredentialAuthorized> {
             return try {
-                check(::credAuthRequestPrepared.isInitialized && ::documentsToSign.isInitialized) {
+                checkAll(
+                    ::credAuthRequestPrepared.isInitialized,
+                    ::documentsToSign.isInitialized,
+                ) {
                     "Credential authorization failed. Call getCredentialAuthorizationUrl() first"
                 }
                 with(client) {
                     val authorized = credAuthRequestPrepared
                         .authorizeWithAuthorizationCode(authorizationCode, serverState)
                         .getOrThrow()
-                    return Result.success(
-                        CredentialAuthorizedImpl(
-                            client = this@with,
-                            documentsToSign = documentsToSign,
-                            documentDigestList = documentDigestList,
-                            credentialAuthorized = authorized,
-                            signingAlgorithm = signingAlgorithm
-                        )
-                    )
+                    signingAlgorithmOID
+                        ?.let { signAlgorithm ->
+                            Result.success(
+                                CredentialAuthorizedImpl(
+                                    client = this@with,
+                                    documentsToSign = documentsToSign,
+                                    documentDigestList = documentDigestList,
+                                    credentialAuthorized = authorized,
+                                    signingAlgorithm = signAlgorithm
+                                )
+                            )
+                        }
+                        ?: throw IllegalStateException("Signing algorithm not initialized. Call getCredentialAuthorizationUrl() first")
                 }
 
             } catch (e: Throwable) {
@@ -313,6 +322,20 @@ class RQESServiceImpl(
             } catch (e: Throwable) {
                 Result.failure(e)
             }
+        }
+    }
+
+    companion object {
+        /**
+         * Check all conditions.
+         * This method is used to check all conditions.
+         * @param conditions The conditions to check.
+         * @param lazyMessage The lazy message.
+         * @throws IllegalStateException If the conditions are not met.
+         * @see check
+         */
+        internal inline fun checkAll(vararg conditions: Boolean, lazyMessage: () -> String) {
+            check(conditions.all { it }) { lazyMessage() }
         }
     }
 }

@@ -44,6 +44,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AuthorizedImplTest {
@@ -59,7 +60,6 @@ class AuthorizedImplTest {
             client = mockClient,
             serviceAccessAuthorized = serviceAccessAuthorized,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
-            signingAlgorithm = SigningAlgorithmOID.ECDSA_SHA256,
         )
     }
 
@@ -84,7 +84,7 @@ class AuthorizedImplTest {
     }
 
     @Test
-    fun `verify getCredentialAuthorizationUrl sets the properties documentsToSign documentDigestList credAuthRequestPrepared and returns the credential authorization url`() =
+    fun `verify getCredentialAuthorizationUrl sets the properties documentsToSign documentDigestList credAuthRequestPrepared and signingAlgorithmOID and returns the credential authorization url`() =
         runTest {
 
             assertThrows(UninitializedPropertyAccessException::class.java) {
@@ -96,6 +96,7 @@ class AuthorizedImplTest {
             assertThrows(UninitializedPropertyAccessException::class.java) {
                 authorizedService.credAuthRequestPrepared
             }
+            assertNull(authorizedService.signingAlgorithmOID)
 
 
             val document = UnsignedDocument(
@@ -104,11 +105,15 @@ class AuthorizedImplTest {
                     AuthorizedImplTest::class.simpleName!!, ".pdf"
                 )
             )
+            val signingAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256
             val documents = UnsignedDocuments(listOf(document))
-            val documentsList = documents.asDocumentToSignList(authorizedService.signingAlgorithm)
+            val documentsList = documents.asDocumentToSignList(signingAlgorithmOID)
             val credentialInfo = mockk<CredentialInfo>(relaxed = true) {
                 every { credentialID } returns CredentialID("credential-id")
                 every { certificate } returns mockk()
+                every { key } returns mockk {
+                    every { supportedAlgorithms } returns listOf(signingAlgorithmOID)
+                }
             }
             val documentDigestList = mockk<DocumentDigestList>()
 
@@ -121,7 +126,7 @@ class AuthorizedImplTest {
             } returns documentDigestList
 
             val mockAuthorizationCodeURL = HttpsUrl("https://example.com/auth").getOrThrow()
-            val mockAuthorizationRequestPrepared = mockk<AuthorizationRequestPrepared>() {
+            val mockAuthorizationRequestPrepared = mockk<AuthorizationRequestPrepared> {
                 every { authorizationCodeURL } returns mockAuthorizationCodeURL
             }
             val credentialAuthorizationRequestPrepared =
@@ -135,7 +140,7 @@ class AuthorizedImplTest {
             )
             coEvery {
                 with(mockClient) {
-                    serviceAccessAuthorized.prepareCredentialAuthorizationRequest(
+                    prepareCredentialAuthorizationRequest(
                         credentialAuthorizationSubject = credentialAuthorizationSubject,
                         walletState = serverState
                     )
@@ -152,6 +157,7 @@ class AuthorizedImplTest {
                 credentialAuthorizationRequestPrepared,
                 authorizedService.credAuthRequestPrepared
             )
+            assertEquals(signingAlgorithmOID, authorizedService.signingAlgorithmOID)
 
         }
 
@@ -185,6 +191,7 @@ class AuthorizedImplTest {
         val credentialAuthRequestPrepared = mockk<CredentialAuthorizationRequestPrepared>()
         val credentialAuthorized = mockk<CredentialAuthorized>()
 
+        authorizedService.signingAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256
         authorizedService.documentsToSign = mockk()
         authorizedService.documentDigestList = mockk()
         authorizedService.credAuthRequestPrepared = credentialAuthRequestPrepared
@@ -202,4 +209,74 @@ class AuthorizedImplTest {
         val result = authorizedService.authorizeCredential(authorizationCode)
         assert(result.isSuccess)
     }
+
+    @Test
+    fun `verify getCredentialAuthorizationUrl with signingAlgorithm keeps the passed algorithm to object state`() =
+        runTest {
+            val document = UnsignedDocument(
+                label = "my pdf file",
+                file = File.createTempFile(
+                    AuthorizedImplTest::class.simpleName!!, ".pdf"
+                )
+            )
+            val usedSigningAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA512
+            val supportedSigningAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256
+
+            val documents = UnsignedDocuments(listOf(document))
+            val documentsList = documents.asDocumentToSignList(usedSigningAlgorithmOID)
+            val credentialInfo = mockk<CredentialInfo>(relaxed = true) {
+                every { credentialID } returns CredentialID("credential-id")
+                every { certificate } returns mockk()
+                every { key } returns mockk {
+                    every { supportedAlgorithms } returns listOf(supportedSigningAlgorithmOID)
+                }
+            }
+            val documentDigestList = mockk<DocumentDigestList>()
+
+            coEvery {
+                mockClient.calculateDocumentHashes(
+                    documents = documentsList,
+                    credentialCertificate = credentialInfo.certificate,
+                    hashAlgorithmOID = authorizedService.hashAlgorithm,
+                )
+            } returns documentDigestList
+
+            val mockAuthorizationCodeURL = HttpsUrl("https://example.com/auth").getOrThrow()
+            val mockAuthorizationRequestPrepared = mockk<AuthorizationRequestPrepared> {
+                every { authorizationCodeURL } returns mockAuthorizationCodeURL
+            }
+            val credentialAuthorizationRequestPrepared =
+                mockk<CredentialAuthorizationRequestPrepared> {
+                    every { authorizationRequestPrepared } returns mockAuthorizationRequestPrepared
+                }
+
+            val credentialAuthorizationSubject = CredentialAuthorizationSubject(
+                credentialRef = CredentialRef.ByCredentialID(credentialInfo.credentialID),
+                documentDigestList = documentDigestList,
+            )
+            coEvery {
+                with(mockClient) {
+                    prepareCredentialAuthorizationRequest(
+                        credentialAuthorizationSubject = credentialAuthorizationSubject,
+                        walletState = serverState
+                    )
+                }
+            } returns Result.success(credentialAuthorizationRequestPrepared)
+
+            val result = authorizedService.getCredentialAuthorizationUrl(
+                credentialInfo,
+                documents,
+                usedSigningAlgorithmOID
+            )
+            assertTrue(result.isSuccess)
+            assertEquals(mockAuthorizationCodeURL, result.getOrThrow())
+
+            assertEquals(documentsList, authorizedService.documentsToSign)
+            assertEquals(documentDigestList, authorizedService.documentDigestList)
+            assertEquals(
+                credentialAuthorizationRequestPrepared,
+                authorizedService.credAuthRequestPrepared
+            )
+            assertEquals(usedSigningAlgorithmOID, authorizedService.signingAlgorithmOID)
+        }
 }

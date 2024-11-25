@@ -37,13 +37,10 @@ import io.ktor.client.HttpClient
  * Ktor HTTP client factory, that can be used to create the HTTP client.
  *
  * @property hashAlgorithm The algorithm OID, for hashing the documents.
- * @property signingAlgorithm The algorithm OID, for signing the documents.
  */
 interface RQESService {
 
     val hashAlgorithm: HashAlgorithmOID
-
-    val signingAlgorithm: SigningAlgorithmOID
 
     /**
      * Get the RSSP metadata.
@@ -105,6 +102,7 @@ interface RQESService {
          *
          * @param credential The credential info.
          * @param documents The list of documents to be signed.
+         * @param signingAlgorithmOID The signing algorithm OID.
          * Implementations should use the default hash algorithm if this parameter is null.
          * Implementations should use the default certificates if this parameter is null.
          * @return The credential authorization URL as a [Result] of [HttpsUrl].
@@ -112,6 +110,7 @@ interface RQESService {
         suspend fun getCredentialAuthorizationUrl(
             credential: CredentialInfo,
             documents: UnsignedDocuments,
+            signingAlgorithmOID: SigningAlgorithmOID? = null,
         ): Result<HttpsUrl>
 
         /**
@@ -153,7 +152,6 @@ interface RQESService {
          * @param serviceEndpointUrl The service endpoint URL.
          * @param config The CSC client configuration.
          * @param hashAlgorithm The hash algorithm OID.
-         * @param signingAlgorithm The signing algorithm OID.
          * @param httpClientFactory The HTTP client factory.
          * @return The RQES service.
          */
@@ -161,13 +159,11 @@ interface RQESService {
             serviceEndpointUrl: String,
             config: CSCClientConfig,
             hashAlgorithm: HashAlgorithmOID = HashAlgorithmOID.SHA_256,
-            signingAlgorithm: SigningAlgorithmOID = SigningAlgorithmOID.RSA_SHA256,
             httpClientFactory: (() -> HttpClient)? = null,
         ): RQESService = RQESServiceImpl(
             serviceEndpointUrl,
             config,
             hashAlgorithm,
-            signingAlgorithm,
             httpClientFactory
         )
     }
