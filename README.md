@@ -37,7 +37,7 @@ file.
 ```kotlin
 dependencies {
     // EUDI Wallet RQES service library
-    implementation("eu.europa.ec.eudi:eudi-lib-android-rqes-core:0.0.4-SNAPSHOT")
+    implementation("eu.europa.ec.eudi:eudi-lib-android-rqes-core:0.1.0")
 }
 ```
 
