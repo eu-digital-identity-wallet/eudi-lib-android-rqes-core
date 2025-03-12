@@ -80,6 +80,10 @@ android {
         jvmTarget = libs.versions.java.get()
     }
 
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+
     sourceSets.getByName("test").apply {
         res.setSrcDirs(files("resources"))
     }

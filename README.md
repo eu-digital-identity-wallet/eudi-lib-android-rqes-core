@@ -82,7 +82,7 @@ val rqesService = RQESService(
     ),
     // set the hashing algorithm that will be used
     // default is SHA-256 as shown below
-    hashAlgorithm = HashAlgorithmOID.SHA_256, 
+    hashAlgorithm = HashAlgorithmOID.SHA_256,
     // optionally provide a HttpClientFactory to create a HttpClient for the service
     // this is useful for logging, testing, etc.
     httpClientFactory = {
@@ -176,6 +176,59 @@ signedDocuments.forEachIndexed { index, inputStream ->
     inputStream.use { signedDocument ->
         File("signed-document-$index.pdf").outputStream()
             .use { signedDocument.copyTo(it) }
+    }
+}
+```
+
+### Document Retrieval
+
+This library is also implements a Document Retrieval functionality, that allows to retrieve the 
+documents to be signed from a RP and to provide back the signed documents or signatures.
+
+The interactions with the RP happen via the DocumentRetrievalService, which is a separate service
+from the RQES service.
+
+
+
+```kotlin 
+val documentRetrievalService = DocumentRetrievalService(
+    downloadTempDir = File(context.cacheDir, "downloads"),
+    config = DocumentRetrievalConfig(
+        jarConfiguration = JarConfiguration.Default,
+        supportedClientIdSchemes = listOf(
+            SupportedClientIdScheme.X509SanUri { _ -> true },
+            SupportedClientIdScheme.X509SanDns { _ -> true },
+        ),
+    )
+)
+
+// Given a request URI, resolve the document(s)
+val requestUri = Uri.parse("mdoc-openid4vp://...?request_uri=...&client_id=...")
+val resolutionOutcome = documentRetrievalService.resolveDocument(requestUri).getOrThrow()
+
+
+// Prepare the documents to sign
+
+val resolvedDocuments = resolutionOutcome.resolvedDocuments
+
+val unsignedDocuments = resolvedDocuments.toUnsignedDocuments(
+    signingConfig = UnsignedDocument.Config.DEFAULT
+)
+
+// Follow the same steps as above to sign the documents using the RQES service
+// When you get the signed documents, you can dispatch them using the dispatch method
+
+// Send the signed documents using the dispatch method of the resolution outcome
+val dispatchOutcome = resolutionOutcome.dispatch(signedDocuments)
+// Handle the dispatch outcome
+when (dispatchOutcome) {
+    is DispatchOutcome.Accepted -> {
+        val redirectUri = dispatchOutcome.redirectURI
+        // redirect the user to the redirectUri
+    }
+
+    DispatchOutcome.Rejected -> {
+        // handle the rejection
     }
 }
 ```
