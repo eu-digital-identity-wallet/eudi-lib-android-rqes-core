@@ -188,8 +188,6 @@ documents to be signed from a RP and to provide back the signed documents or sig
 The interactions with the RP happen via the DocumentRetrievalService, which is a separate service
 from the RQES service.
 
-
-
 ```kotlin 
 // X509CertificateTrust implementation for the supported client id schemes
 // Library provides a default implementation of the X509CertificateTrust interface that validates
@@ -246,6 +244,25 @@ when (dispatchOutcome) {
         // handle the rejection
     }
 }
+```
+
+#### Note 
+
+If you want to use the X509CertificateTrust implementation provided by the library with BouncyCastle
+you must add the following dependencies to your project's build.gradle file:
+
+```kotlin
+dependencies {
+    // BouncyCastle
+    implementation("org.bouncycastle:bcprov-jdk15on:1.78.1")
+    implementation("org.bouncycastle:bcpkix-jdk15on:1.78.1")
+}
+```
+
+Also, you need to add the BouncyCastle provider to the Security providers list:
+
+```kotlin
+Security.addProvider(BouncyCastleProvider())
 ```
 
 ## How to contribute
