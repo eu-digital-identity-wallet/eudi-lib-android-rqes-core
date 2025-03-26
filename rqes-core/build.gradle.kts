@@ -111,6 +111,8 @@ dependencies {
     api(libs.eudi.rqes.jvm)
     implementation(libs.kotlinx.io.core)
     implementation(libs.kotlinx.datetime)
+    implementation(libs.bouncy.castle.pkix)
+    implementation(libs.bouncy.castle.prov)
 
     // Ktor Android Engine
     runtimeOnly(libs.ktor.client.android)

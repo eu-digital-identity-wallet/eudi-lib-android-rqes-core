@@ -191,13 +191,28 @@ from the RQES service.
 
 
 ```kotlin 
+// X509CertificateTrust implementation for the supported client id schemes
+// Library provides a default implementation of the X509CertificateTrust interface that validates
+// the path of the certificate chain and checks the trust anchor against a list of trusted certificates
+val x509CertificateTrust = X509CertificateTrust(
+    trustedCertificates = listOf(
+        // Add the trusted certificates
+    ),
+    // if you want to log the errors, you can provide a logger
+    logException = { th: Throwable -> th.printStackTrace() }
+)
+
+// or
+// provide own implementation of the X509CertificateTrust interface
+
+// Instantiate the DocumentRetrievalService with the required configuration
 val documentRetrievalService = DocumentRetrievalService(
     downloadTempDir = File(context.cacheDir, "downloads"),
     config = DocumentRetrievalConfig(
         jarConfiguration = JarConfiguration.Default,
         supportedClientIdSchemes = listOf(
-            SupportedClientIdScheme.X509SanUri { _ -> true },
-            SupportedClientIdScheme.X509SanDns { _ -> true },
+            SupportedClientIdScheme.X509SanUri(x509CertificateTrust),
+            SupportedClientIdScheme.X509SanDns(x509CertificateTrust),
         ),
     )
 )
