@@ -16,7 +16,6 @@
 
 package eu.europa.ec.eudi.rqes.core.documentRetrieval
 
-import android.content.Context
 import android.net.Uri
 import eu.europa.ec.eudi.documentretrieval.DocumentRetrievalConfig
 import eu.europa.ec.eudi.rqes.DefaultHttpClientFactory
@@ -46,9 +45,15 @@ interface DocumentRetrievalService {
         operator fun invoke(
             downloadTempDir: File,
             config: DocumentRetrievalConfig,
+            checkHashes: Boolean = true,
             httpClientFactory: KtorHttpClientFactory = DefaultHttpClientFactory
         ): DocumentRetrievalService =
-            DocumentRetrievalServiceImpl(downloadTempDir, config, httpClientFactory)
+            DocumentRetrievalServiceImpl(
+                downloadTempDir = downloadTempDir,
+                config = config,
+                checkHashes = checkHashes,
+                httpClientFactory = httpClientFactory
+            )
     }
 }
 

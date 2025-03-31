@@ -36,7 +36,8 @@ import java.util.Base64
 class DocumentRetrievalServiceImpl internal constructor(
     @VisibleForTesting internal val downloadTempDir: File,
     @VisibleForTesting internal val client: DocumentRetrieval,
-    @VisibleForTesting internal val httpClientFactory: KtorHttpClientFactory = DefaultHttpClientFactory,
+    @VisibleForTesting internal val checkHashes: Boolean = true,
+    @VisibleForTesting internal val httpClientFactory: KtorHttpClientFactory = DefaultHttpClientFactory
 ) : DocumentRetrievalService {
 
     override suspend fun resolveDocument(requestUri: Uri): Result<ResolutionOutcome> {
@@ -53,7 +54,7 @@ class DocumentRetrievalServiceImpl internal constructor(
 
                         val (documentContent, documentHash) = response
                             .readDocument(resolution.requestObject.hashAlgorithmOID)
-                        if (digest.hash != documentHash) {
+                        if (checkHashes && digest.hash != documentHash) {
                             return Result.failure(
                                 IllegalStateException("Document hash check failed")
                             )
@@ -85,10 +86,12 @@ class DocumentRetrievalServiceImpl internal constructor(
         operator fun invoke(
             downloadTempDir: File,
             config: DocumentRetrievalConfig,
+            checkHashes: Boolean = true,
             httpClientFactory: KtorHttpClientFactory = DefaultHttpClientFactory,
         ): DocumentRetrievalServiceImpl = DocumentRetrievalServiceImpl(
             downloadTempDir = downloadTempDir,
             client = DocumentRetrieval(config, httpClientFactory),
+            checkHashes = checkHashes,
             httpClientFactory = httpClientFactory,
         )
 

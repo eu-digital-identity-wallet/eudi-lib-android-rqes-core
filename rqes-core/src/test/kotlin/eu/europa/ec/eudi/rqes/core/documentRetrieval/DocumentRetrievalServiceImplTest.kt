@@ -202,4 +202,91 @@ class DocumentRetrievalServiceImplTest {
         assertTrue(result.isFailure)
         assertFailsWith<IllegalStateException>("Document hash check failed") { result.getOrThrow() }
     }
+
+    @Test
+    fun resolveDocument_skipHashChecking() = runTest {
+        val differentContent = "different content"
+        val httpClientFactory: KtorHttpClientFactory = {
+            HttpClient(MockEngine) {
+                engine {
+                    addHandler { respond(differentContent, HttpStatusCode.OK) }
+                }
+            }
+        }
+
+        coEvery { client.resolveRequestUri(any()) } returns Resolution.Success(
+            requestObject = mockk<ResolvedRequestObject> {
+                every { documentLocations } returns listOf(
+                    DocumentLocation(
+                        uri = URL("http://example.com/document"),
+                        method = AccessMethod.Public
+                    )
+                )
+                every { documentDigests } returns listOf(
+                    DocumentDigest(
+                        hash = MessageDigest.getInstance("SHA-256")
+                            .digest("original content".toByteArray())
+                            .encodeBase64(),
+                        label = "document",
+                    )
+                )
+                every { hashAlgorithmOID } returns HashAlgorithmOID.SHA_256
+            }
+        )
+
+        val service = DocumentRetrievalServiceImpl(
+            downloadTempDir = Files.createTempDirectory(this::class.java.name).toFile(),
+            client = client,
+            checkHashes = false,
+            httpClientFactory = httpClientFactory
+        )
+
+        val result = service.resolveDocument(requestUri)
+        assertTrue(result.isSuccess)
+        assertEquals(1, result.getOrThrow().resolvedDocuments.size)
+    }
+
+    @Test
+    fun resolveDocument_hashCheckFailsWithModifiedContent() = runTest {
+        val originalContent = "original document"
+        val modifiedContent = "modified document"
+        val httpClientFactory: KtorHttpClientFactory = {
+            HttpClient(MockEngine) {
+                engine {
+                    addHandler { respond(modifiedContent, HttpStatusCode.OK) }
+                }
+            }
+        }
+
+        coEvery { client.resolveRequestUri(any()) } returns Resolution.Success(
+            requestObject = mockk<ResolvedRequestObject> {
+                every { documentLocations } returns listOf(
+                    DocumentLocation(
+                        uri = URL("http://example.com/document"),
+                        method = AccessMethod.Public
+                    )
+                )
+                every { documentDigests } returns listOf(
+                    DocumentDigest(
+                        hash = MessageDigest.getInstance("SHA-256")
+                            .digest(originalContent.toByteArray())
+                            .encodeBase64(),
+                        label = "document"
+                    )
+                )
+                every { hashAlgorithmOID } returns HashAlgorithmOID.SHA_256
+            }
+        )
+
+        val service = DocumentRetrievalServiceImpl(
+            downloadTempDir = Files.createTempDirectory(this::class.java.name).toFile(),
+            client = client,
+            httpClientFactory = httpClientFactory
+        )
+
+        val result = service.resolveDocument(requestUri)
+        assertTrue(result.isFailure)
+        val exception = assertFailsWith<IllegalStateException> { result.getOrThrow() }
+        assertEquals("Document hash check failed", exception.message)
+    }
 }
