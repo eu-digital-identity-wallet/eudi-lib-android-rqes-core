@@ -29,6 +29,7 @@ interface ResolutionOutcome {
 
     /**
      * Dispatches the signed documents.
+     *
      * @param signedDocuments The signed documents.
      * @return The outcome of the dispatch.
      */

@@ -182,7 +182,7 @@ signedDocuments.forEachIndexed { index, inputStream ->
 
 ### Document Retrieval
 
-This library is also implements a Document Retrieval functionality, that allows to retrieve the 
+This library is also implements a Document Retrieval functionality, that allows to retrieve the
 documents to be signed from a RP and to provide back the signed documents or signatures.
 
 The interactions with the RP happen via the DocumentRetrievalService, which is a separate service
@@ -246,18 +246,21 @@ when (dispatchOutcome) {
 }
 ```
 
-#### Note 
+#### Notes
 
-If you want to use the X509CertificateTrust implementation provided by the library with BouncyCastle
-you must add the following dependencies to your project's build.gradle file:
-
-```kotlin
-dependencies {
-    // BouncyCastle
-    implementation("org.bouncycastle:bcprov-jdk15on:1.78.1")
-    implementation("org.bouncycastle:bcpkix-jdk15on:1.78.1")
-}
-```
+- `SignedDocuments` contains input streams that are consumed when read. Before dispatching, these
+  streams need to be reset to their starting position. The `ResolutionOutcomeImpl.dispatch` method
+  automatically attempts to reset streams if they support the operation. Alternatively, you can
+  create a fresh ByteArrayInputStream from the signed document's byte array.
+- If you want to use the `X509CertificateTrust` implementation provided by the library with
+  BouncyCastle you must add the following dependencies to your project's build.gradle file:
+    ```kotlin
+    dependencies {
+        // BouncyCastle
+        implementation("org.bouncycastle:bcprov-jdk15on:1.78.1")
+        implementation("org.bouncycastle:bcpkix-jdk15on:1.78.1")
+    }
+    ```
 
 Also, you need to add the BouncyCastle provider to the Security providers list:
 
