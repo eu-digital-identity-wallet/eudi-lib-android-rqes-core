@@ -37,7 +37,7 @@ file.
 ```kotlin
 dependencies {
     // EUDI Wallet RQES service library
-    implementation("eu.europa.ec.eudi:eudi-lib-android-rqes-core:0.1.1")
+    implementation("eu.europa.ec.eudi:eudi-lib-android-rqes-core:0.2.1")
 }
 ```
 
@@ -261,12 +261,12 @@ when (dispatchOutcome) {
         implementation("org.bouncycastle:bcpkix-jdk15on:1.78.1")
     }
     ```
-
-Also, you need to add the BouncyCastle provider to the Security providers list:
-
-```kotlin
-Security.addProvider(BouncyCastleProvider())
-```
+    
+    Also, you need to add the BouncyCastle provider to the Security providers list:
+    
+    ```kotlin
+    Security.addProvider(BouncyCastleProvider())
+    ```
 
 ## How to contribute
 
