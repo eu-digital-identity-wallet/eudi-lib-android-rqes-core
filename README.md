@@ -24,7 +24,7 @@ dependencyResolutionManagement {
     repositories {
         // .. other repositories
         maven {
-            url = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            url = uri("https://central.sonatype.com/repository/maven-snapshots/")
             mavenContent { snapshotsOnly() }
         }
     }
@@ -37,7 +37,7 @@ file.
 ```kotlin
 dependencies {
     // EUDI Wallet RQES service library
-    implementation("eu.europa.ec.eudi:eudi-lib-android-rqes-core:0.2.1")
+    implementation("eu.europa.ec.eudi:eudi-lib-android-rqes-core:0.3.0-SNAPSHOT")
 }
 ```
 
