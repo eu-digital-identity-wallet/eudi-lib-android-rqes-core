@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 European Commission
+ * Copyright (c) 2024-2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ class RQESServiceTest {
         val rqesService = RQESService(
             serviceEndpointUrl = "https://example.com/csc/v2",
             config = config,
+            outputPathDir = "/tmp",
             httpClientFactory = mockkHttpClientFactory
 
         )
@@ -52,6 +53,7 @@ class RQESServiceTest {
         assertIs<RQESServiceImpl>(rqesService)
         assertEquals("https://example.com/csc/v2", rqesService.serviceEndpointUrl)
         assertEquals(config, rqesService.config)
+        assertEquals("/tmp", rqesService.outputPathDir)
         assertEquals(HashAlgorithmOID.SHA_256, rqesService.hashAlgorithm)
         assertEquals(mockkHttpClientFactory, rqesService.clientFactory)
     }
@@ -70,6 +72,7 @@ class RQESServiceTest {
         val rqesService = RQESService(
             serviceEndpointUrl = "https://example.com/csc/v2",
             config = config,
+            outputPathDir = "/tmp",
         )
 
         assertIs<RQESServiceImpl>(rqesService)
@@ -94,12 +97,14 @@ class RQESServiceTest {
         val rqesService = RQESService(
             serviceEndpointUrl = "https://example.com/csc/v2",
             config = config,
+            outputPathDir = "/tmp",
             hashAlgorithm = HashAlgorithmOID.SHA_512,
         )
 
         assertIs<RQESServiceImpl>(rqesService)
         assertEquals("https://example.com/csc/v2", rqesService.serviceEndpointUrl)
         assertEquals(config, rqesService.config)
+        assertEquals("/tmp", rqesService.outputPathDir)
         assertEquals(HashAlgorithmOID.SHA_512, rqesService.hashAlgorithm)
         assertNull(rqesService.clientFactory)
     }

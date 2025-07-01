@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 European Commission
+ * Copyright (c) 2024-2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,22 @@
 
 package eu.europa.ec.eudi.rqes.core
 
-import java.io.InputStream
+import java.io.File
 
 /**
- * Represents a list of signed documents.
- *
- * @constructor Creates a new instance of [SignedDocuments] with the given list of signed documents.
- *
- * @param signedDocuments The list of [InputStream] of signed documents' content.
+ * A document label identifier.
+ * Used as the key in the map of signed documents.
  */
-class SignedDocuments(signedDocuments: List<InputStream>) :
-    List<InputStream> by ArrayList(signedDocuments)
+typealias DocumentLabel = String
+
+/**
+ * Represents a collection of signed documents organized as a map.
+ *
+ * This class provides access to signed document files, mapped by their document labels.
+ * It implements the [Map] interface, allowing direct access to documents using their labels as keys.
+ *
+ * @constructor Creates a new instance of [SignedDocuments] with the given map of signed documents.
+ * @param signedDocuments A map where keys are document labels and values are the corresponding signed document files.
+ */
+class SignedDocuments internal constructor(signedDocuments: Map<DocumentLabel, File>) :
+    Map<DocumentLabel, File> by signedDocuments

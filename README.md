@@ -13,7 +13,7 @@ signing processes.
 
 ## Requirements
 
-- Android 8 (API level 26) or higher
+- Android 8 (API level 29) or higher
 
 ### Dependencies
 
@@ -80,6 +80,7 @@ val rqesService = RQESService(
         authFlowRedirectionURI = URI("rqes:redirect"),
         scaBaseURL = URL("https://example.com"),
     ),
+    outputPathDir = "/path/to/output/dir",
     // set the hashing algorithm that will be used
     // default is SHA-256 as shown below
     hashAlgorithm = HashAlgorithmOID.SHA_256,
@@ -165,19 +166,21 @@ val credentialAuthorizationUrl = authorizedService.getCredentialAuthorizationUrl
 val credentialAuthorizationCode = AuthorizationCode("credential-code")
 
 val authorizedCredential =
-    authorizedService.authorizeCredential(authorizationCode).getOrThrow()
+    authorizedService.authorizeCredential(credentialAuthorizationCode).getOrThrow()
 
 // Sign the documents
 val signedDocuments = authorizedCredential.signDocuments().getOrThrow()
 
-// Manipulate the signed documents. For example, save them to disk
-signedDocuments.forEachIndexed { index, inputStream ->
-    // Save the signed document
-    inputStream.use { signedDocument ->
-        File("signed-document-$index.pdf").outputStream()
-            .use { signedDocument.copyTo(it) }
-    }
+// Manipulate the signed documents
+signedDocuments.forEach { (label, file) ->
+    // Use the signed file
+    val fileContent = file.readBytes()
 }
+
+// Alternatively, you can use the extension function to sign the documents
+// directly from the authorized service without the need to call authorizeCredential
+// method first and then call signDocuments method
+val signedDocumentsAlt = authorizedService.signDocuments(credentialAuthorizationCode).getOrThrow()
 ```
 
 ### Document Retrieval
@@ -248,10 +251,14 @@ when (dispatchOutcome) {
 
 #### Notes
 
-- `SignedDocuments` contains input streams that are consumed when read. Before dispatching, these
-  streams need to be reset to their starting position. The `ResolutionOutcomeImpl.dispatch` method
-  automatically attempts to reset streams if they support the operation. Alternatively, you can
-  create a fresh ByteArrayInputStream from the signed document's byte array.
+- `SignedDocuments` implements the `Map` interface, with document labels as keys and corresponding signed document `File` objects as values. This allows for easy access to the signed files using their labels:
+  ```kotlin
+  // Access the signed documents by their labels
+  signedDocuments.forEach { (label, file) ->
+      // Use the signed file
+      val fileContent = file.readBytes()
+  }
+  ```
 - If you want to use the `X509CertificateTrust` implementation provided by the library with
   BouncyCastle you must add the following dependencies to your project's build.gradle file:
     ```kotlin
@@ -294,3 +301,4 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
+

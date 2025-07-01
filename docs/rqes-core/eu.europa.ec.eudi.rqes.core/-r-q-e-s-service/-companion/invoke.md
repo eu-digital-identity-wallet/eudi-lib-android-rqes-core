@@ -3,13 +3,15 @@
 # invoke
 
 [androidJvm]\
-operator fun [invoke](invoke.md)(serviceEndpointUrl: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html), config: CSCClientConfig, hashAlgorithm: HashAlgorithmOID = HashAlgorithmOID.SHA_256, httpClientFactory: () -&gt; HttpClient? = null): [RQESService](../index.md)
+operator fun [invoke](invoke.md)(serviceEndpointUrl: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html), config: CSCClientConfig, outputPathDir: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html), hashAlgorithm: HashAlgorithmOID = HashAlgorithmOID.SHA_256, httpClientFactory: () -&gt; HttpClient? = null): [RQESService](../index.md)
 
-Create the RQES service.
+Creates an instance of the RQES service.
+
+This factory method constructs and configures an RQES service implementation with the specified parameters.
 
 #### Return
 
-The RQES service.
+A configured [RQESService](../index.md) implementation.
 
 #### Parameters
 
@@ -17,7 +19,14 @@ androidJvm
 
 | | |
 |---|---|
-| serviceEndpointUrl | The service endpoint URL. |
-| config | The CSC client configuration. |
-| hashAlgorithm | The hash algorithm OID. |
-| httpClientFactory | The HTTP client factory. |
+| serviceEndpointUrl | The RSSP service endpoint URL. |
+| config | The Cloud Signature Consortium client configuration. |
+| outputPathDir | The directory where signed documents will be stored. |
+| hashAlgorithm | The algorithm OID to use for document hashing, defaults to SHA-256. |
+| httpClientFactory | Optional custom HTTP client factory for network requests. |
+
+#### Throws
+
+| | |
+|---|---|
+| [IllegalArgumentException](https://developer.android.com/reference/kotlin/java/lang/IllegalArgumentException.html) | If [outputPathDir](invoke.md) does not point to a valid directory. |

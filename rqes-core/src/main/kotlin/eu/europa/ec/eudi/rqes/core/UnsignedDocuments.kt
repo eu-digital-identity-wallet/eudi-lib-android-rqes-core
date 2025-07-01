@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 European Commission
+ * Copyright (c) 2024-2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,16 +17,20 @@
 package eu.europa.ec.eudi.rqes.core
 
 import eu.europa.ec.eudi.rqes.DocumentToSign
-import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 
 /**
- * A list of [UnsignedDocument]s to be signed.
+ * A collection of [UnsignedDocument]s that are to be signed.
+ *
+ * This class provides a convenient way to work with multiple unsigned documents as a single unit.
+ * It implements the [List] interface for easy iteration and access to the underlying documents.
+ *
+ * @property unsignedDocuments The underlying list of [UnsignedDocument]s to be signed.
  * @constructor Creates a new [UnsignedDocuments] with the given list of [UnsignedDocument]s and hash algorithm.
  *
  * @param unsignedDocuments The list of [UnsignedDocument]s to be signed.
  */
 class UnsignedDocuments(
-    unsignedDocuments: List<UnsignedDocument>
+    private val unsignedDocuments: List<UnsignedDocument>
 ) : List<UnsignedDocument> by unsignedDocuments {
 
     /**
@@ -38,10 +42,14 @@ class UnsignedDocuments(
 
     /**
      * Converts this [UnsignedDocuments] to a list of [DocumentToSign]s.
-     * @param signingAlgorithmOID The OID of the signing algorithm to be used for the signing process.
-     * @return The list of [DocumentToSign]s.
+     *
+     * This internal method transforms each unsigned document into the format required
+     * for the actual signing process. It creates output paths for each document in
+     * the specified output directory.
+     *
+     * @param outputPathDir The directory where the signed documents will be stored.
+     * @return A list of [DocumentToSign] objects ready for the signing process.
      */
-    internal fun asDocumentToSignList(
-        signingAlgorithmOID: SigningAlgorithmOID
-    ): List<DocumentToSign> = map { it.asDocumentToSign(signingAlgorithmOID) }
+    internal fun asDocumentToSignList(outputPathDir: String): List<DocumentToSign> =
+        map { it.asDocumentToSign(outputPathDir) }
 }

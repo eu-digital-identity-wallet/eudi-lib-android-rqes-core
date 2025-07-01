@@ -41,24 +41,16 @@ class ResolutionOutcomeImpl(
     /**
      * Dispatches the signed documents to the Document Retrieval service.
      *
-     * This method reads the input stream of each signed document, resets it if supported,
-     * and converts it to a string representation before dispatching.
+     * This method converts each signed document to a string representation by reading its bytes
+     * and then dispatches them to the Document Retrieval service with a positive consensus.
      *
      * @param signedDocuments the signed documents to be dispatched
-     * @return the outcome of the dispatch operation
-     * @throws java.io.IOException if an I/O error occurs during reading the input stream of the signed documents
+     * @return the outcome of the dispatch operation as [DispatchOutcome]
      */
     override suspend fun dispatch(signedDocuments: SignedDocuments): DispatchOutcome {
         val documentWithSignature =
-            signedDocuments.map { inputStream ->
-                // reset inputStream to the beginning if it supports mark/reset
-                // otherwise read the bytes from the current position
-                // we need to read the bytes again because if the inputStream is consumed
-                // we cannot dispatch it
-                if (inputStream.markSupported()) {
-                    inputStream.reset()
-                }
-                inputStream.readBytes().decodeToString()
+            signedDocuments.map { (_, file) ->
+                file.readBytes().decodeToString()
             }
 
         return client.dispatch(

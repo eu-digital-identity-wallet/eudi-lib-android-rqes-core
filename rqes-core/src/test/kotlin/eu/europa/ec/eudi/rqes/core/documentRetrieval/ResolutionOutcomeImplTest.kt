@@ -26,8 +26,8 @@ import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
-import java.io.ByteArrayInputStream
 import java.net.URI
+import kotlin.io.path.createTempFile
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -41,9 +41,13 @@ class ResolutionOutcomeImplTest {
     @Test
     fun dispatch_acceptedDispatch() = runTest {
         val signedDocuments = SignedDocuments(
-            listOf(
-                ByteArrayInputStream("signed document 1".toByteArray()).apply { readBytes() },
-                ByteArrayInputStream("signed document 2".toByteArray()),
+            mapOf(
+                "file1" to createTempFile().toFile().apply {
+                    writeBytes("signed document 1".toByteArray())
+                },
+                "file2" to createTempFile().toFile().apply {
+                    writeBytes("signed document 2".toByteArray())
+                },
             )
         )
         val consensus = Consensus.Positive(
@@ -68,10 +72,11 @@ class ResolutionOutcomeImplTest {
 
     @Test
     fun dispatch_rejectedDispatch() = runTest {
+
         val signedDocuments = SignedDocuments(
-            listOf(
-                ByteArrayInputStream(ByteArray(0)),
-                ByteArrayInputStream(ByteArray(0)),
+            mapOf(
+                "file1" to createTempFile().toFile(),
+                "file2" to createTempFile().toFile(),
             )
         )
         val dispatchOutcome = DispatchOutcome.Rejected
@@ -84,9 +89,9 @@ class ResolutionOutcomeImplTest {
     @Test
     fun dispatch_failureDispatch() = runTest {
         val signedDocuments = SignedDocuments(
-            listOf(
-                ByteArrayInputStream(ByteArray(0)),
-                ByteArrayInputStream(ByteArray(0)),
+            mapOf(
+                "file1" to createTempFile().toFile(),
+                "file2" to createTempFile().toFile(),
             )
         )
         val exception = Exception("Dispatch failed")

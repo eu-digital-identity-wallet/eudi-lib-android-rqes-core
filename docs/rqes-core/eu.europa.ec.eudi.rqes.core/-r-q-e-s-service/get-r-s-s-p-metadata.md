@@ -3,13 +3,15 @@
 # getRSSPMetadata
 
 [androidJvm]\
-abstract suspend fun [getRSSPMetadata](get-r-s-s-p-metadata.md)(): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html)&lt;RSSPMetadata&gt;
+abstract suspend fun [getRSSPMetadata](get-r-s-s-p-metadata.md)(): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html)&lt;RSSPMetadata&gt;
 
-Get the RSSP metadata. This method is used to get the RSSP metadata. The RSSP metadata contains the information about the RSSP.
+Retrieves the Remote Signature Service Provider (RSSP) metadata.
+
+The metadata contains information about the RSSP service capabilities, supported algorithms, and other service-specific details.
 
 #### Return
 
-The RSSP metadata as a [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html) of RSSPMetadata.
+A [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html) containing RSSPMetadata if successful, or an error if the operation failed.
 
 #### See also
 

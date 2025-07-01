@@ -3,10 +3,12 @@
 # signDocuments
 
 [androidJvm]\
-abstract suspend fun [signDocuments](sign-documents.md)(): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html)&lt;[SignedDocuments](../../-signed-documents/index.md)&gt;
+abstract suspend fun [signDocuments](sign-documents.md)(): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html)&lt;[SignedDocuments](../../-signed-documents/index.md)&gt;
 
-Sign the documents. This method is used to sign the documents. The documents are the list of documents that were passed to the [RQESService.Authorized.getCredentialAuthorizationUrl](../-authorized/get-credential-authorization-url.md) method. The documents are signed using the authorized credential.
+Signs the previously specified documents using the authorized credential.
+
+This method performs the actual document signing operation with the credential that was authorized through the [RQESService.Authorized.authorizeCredential](../-authorized/authorize-credential.md) process. The documents to be signed are those that were provided to [RQESService.Authorized.getCredentialAuthorizationUrl](../-authorized/get-credential-authorization-url.md).
 
 #### Return
 
-The list of signed documents as a [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html) of [SignedDocuments](../../-signed-documents/index.md). The signed documents are the documents that were signed.
+A [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html) containing the [SignedDocuments](../../-signed-documents/index.md) if signing is successful,     or an error if the signing operation failed.

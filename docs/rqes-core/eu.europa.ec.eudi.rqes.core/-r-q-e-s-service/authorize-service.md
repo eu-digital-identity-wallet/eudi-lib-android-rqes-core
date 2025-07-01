@@ -3,13 +3,15 @@
 # authorizeService
 
 [androidJvm]\
-abstract suspend fun [authorizeService](authorize-service.md)(authorizationCode: AuthorizationCode): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html)&lt;[RQESService.Authorized](-authorized/index.md)&gt;
+abstract suspend fun [authorizeService](authorize-service.md)(authorizationCode: AuthorizationCode): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html)&lt;[RQESService.Authorized](-authorized/index.md)&gt;
 
-Authorize with the service. This method is used to authorize the service to access the user's credentials. Once the authorizationCode is obtained using the service authorization URL, it can be used to authorize the service.
+Completes the authorization process with the service.
+
+After the user completes the authorization flow at the service authorization URL, an authorization code is provided. This method exchanges that code for service access and returns an authorized service instance.
 
 #### Return
 
-The authorized service as a [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html) of [Authorized](-authorized/index.md). [Authorized](-authorized/index.md) is the interface to interact with the authorized service.
+A [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html) containing an [Authorized](-authorized/index.md) service instance if successful,     or an error if the authorization failed.
 
 #### Parameters
 
@@ -17,4 +19,4 @@ androidJvm
 
 | | |
 |---|---|
-| authorizationCode | The authorization code. |
+| authorizationCode | The authorization code received after user authorization. |

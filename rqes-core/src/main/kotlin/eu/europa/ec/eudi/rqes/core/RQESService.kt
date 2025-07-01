@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 European Commission
+ * Copyright (c) 2024-2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,148 +23,166 @@ import eu.europa.ec.eudi.rqes.CredentialsListRequest
 import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.HttpsUrl
 import eu.europa.ec.eudi.rqes.RSSPMetadata
-import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import io.ktor.client.HttpClient
+import java.io.File
 
 /**
- * The RQES service interface.
- * This interface provides the methods to interact with the RQES service.
- * The service is divided into two parts:
- * - The first part is the authorization part, which is used to authorize the service to access the user's credentials.
- * - The second part is the credential part, which is used to sign the documents.
+ * The RQES (Remote Qualified Electronic Signature) service interface.
  *
- * HTTP client factory should be used. This property is optional can be used to provide a custom
- * Ktor HTTP client factory, that can be used to create the HTTP client.
+ * This interface provides methods to interact with the RQES service for document signing.
+ * The service workflow is divided into two parts:
+ * - The authorization phase, which authenticates and authorizes the service to access user credentials
+ * - The credential phase, which handles document signing with authorized credentials
  *
- * @property hashAlgorithm The algorithm OID, for hashing the documents.
+ * @property hashAlgorithm The algorithm OID used for hashing documents during the signing process.
  */
 interface RQESService {
 
     val hashAlgorithm: HashAlgorithmOID
 
     /**
-     * Get the RSSP metadata.
-     * This method is used to get the RSSP metadata.
-     * The RSSP metadata contains the information about the RSSP.
-     * @see [RSSPMetadata]
+     * Retrieves the Remote Signature Service Provider (RSSP) metadata.
      *
-     * @return The RSSP metadata as a [Result] of [RSSPMetadata].
+     * The metadata contains information about the RSSP service capabilities,
+     * supported algorithms, and other service-specific details.
+     *
+     * @return A [Result] containing [RSSPMetadata] if successful, or an error if the operation failed.
+     * @see [RSSPMetadata]
      */
     suspend fun getRSSPMetadata(): Result<RSSPMetadata>
 
     /**
-     * Get the service authorization URL.
-     * This method is used to get the service authorization URL.
-     * The service authorization URL is used to authorize the service to access the user's credentials.
+     * Retrieves the service authorization URL.
      *
-     * @return The service authorization URL as a [Result] of [HttpsUrl].
+     * This URL is used to initiate the authorization flow, allowing the service to
+     * access the user's credentials. The user should be redirected to this URL to
+     * complete the authorization process.
+     *
+     * @return A [Result] containing an [HttpsUrl] for authorization if successful,
+     *         or an error if the operation failed.
      */
     suspend fun getServiceAuthorizationUrl(): Result<HttpsUrl>
 
     /**
-     * Authorize with the service.
-     * This method is used to authorize the service to access the user's credentials.
-     * Once the authorizationCode is obtained using the service authorization URL, it can be used to authorize the service.
+     * Completes the authorization process with the service.
      *
-     * @param authorizationCode The authorization code.
-     * @return The authorized service as a [Result] of [Authorized]. [Authorized] is the interface
-     * to interact with the authorized service.
+     * After the user completes the authorization flow at the service authorization URL,
+     * an authorization code is provided. This method exchanges that code for service
+     * access and returns an authorized service instance.
+     *
+     * @param authorizationCode The authorization code received after user authorization.
+     * @return A [Result] containing an [Authorized] service instance if successful,
+     *         or an error if the authorization failed.
      */
     suspend fun authorizeService(authorizationCode: AuthorizationCode): Result<Authorized>
 
 
     /**
-     * The authorized service interface.
-     * This interface provides the methods to interact with the authorized service.
-     * The authorized service is used to access the user's credentials and sign the documents.
+     * Interface for interacting with the RQES service after successful authorization.
+     *
+     * This interface provides methods to access user credentials and initiate the
+     * document signing process after the service has been authorized.
      */
     interface Authorized {
 
         /**
-         * List the credentials.
-         * This method is used to list the credentials.
-         * The credentials are the user's credentials that can be used to sign the documents.
+         * Retrieves a list of available signing credentials.
          *
-         * Method accepts [CredentialsListRequest] as a parameter to filter the credentials.
-         * If the request is null, all the valid credentials should be returned.
+         * Returns all credentials that can be used for document signing, optionally filtered
+         * by the provided request parameters.
          *
-         * @param request The credentials list request.
-         * @return The list of credentials as a [Result] of [List] of [CredentialInfo].
+         * @param request Optional filter criteria for the credentials list. If null, all valid
+         *                credentials will be returned.
+         * @return A [Result] containing a list of [CredentialInfo] objects if successful,
+         *         or an error if the operation failed.
          */
         suspend fun listCredentials(request: CredentialsListRequest? = null): Result<List<CredentialInfo>>
 
         /**
-         * Get the credential authorization URL.
-         * This method is used to get the credential authorization URL.
+         * Retrieves the credential authorization URL for document signing.
          *
-         * The credential authorization URL is used to authorize the credential that will be used
-         * to sign the documents.
+         * This URL is used to initiate the credential authorization flow, which allows
+         * the specified credential to be used for signing the provided documents.
          *
-         * @param credential The credential info.
-         * @param documents The list of documents to be signed.
-         * @param signingAlgorithmOID The signing algorithm OID.
-         * Implementations should use the default hash algorithm if this parameter is null.
-         * Implementations should use the default certificates if this parameter is null.
-         * @return The credential authorization URL as a [Result] of [HttpsUrl].
+         * @param credential The credential to be used for signing.
+         * @param documents The collection of unsigned documents to be signed.
+         * @return A [Result] containing an [HttpsUrl] for credential authorization if successful,
+         *         or an error if the operation failed.
          */
         suspend fun getCredentialAuthorizationUrl(
             credential: CredentialInfo,
-            documents: UnsignedDocuments,
-            signingAlgorithmOID: SigningAlgorithmOID? = null,
+            documents: UnsignedDocuments
         ): Result<HttpsUrl>
 
         /**
-         * Authorize the credential.
-         * This method is used to authorize the credential that will be used to sign the documents.
-         * Once the authorizationCode is obtained using the credential authorization URL, it can be used to authorize the credential.
-         * The authorized credential can be used to sign the documents.
-         * @param authorizationCode The authorization code.
-         * @return The authorized credential as a [Result] of [CredentialAuthorized].
+         * Completes the credential authorization process.
+         *
+         * After the user completes the credential authorization flow, an authorization code
+         * is provided. This method exchanges that code for credential access and returns
+         * an interface to sign the previously specified documents.
+         *
+         * @param authorizationCode The authorization code received after user credential authorization.
+         * @return A [Result] containing a [CredentialAuthorized] instance if successful,
+         *         or an error if the authorization failed.
          */
         suspend fun authorizeCredential(authorizationCode: AuthorizationCode): Result<CredentialAuthorized>
-
     }
 
     /**
-     * The credential authorized interface.
-     * This interface provides the methods to interact with the authorized credential.
-     * The authorized credential is used to sign the documents.
+     * Interface for signing documents with an authorized credential.
      *
-     * The list of documents that will be signed using the authorized credential are the documents
-     * that were passed to the [RQESService.Authorized.getCredentialAuthorizationUrl] method.
+     * This interface provides access to document signing operations after a specific
+     * credential has been authorized. It operates on the documents that were previously
+     * specified during the credential authorization process.
      */
     interface CredentialAuthorized {
 
         /**
-         * Sign the documents.
-         * This method is used to sign the documents.
-         * The documents are the list of documents that were passed to the [RQESService.Authorized.getCredentialAuthorizationUrl] method.
-         * The documents are signed using the authorized credential.
-         * @return The list of signed documents as a [Result] of [SignedDocuments]. The signed documents are the documents that were signed.
+         * Signs the previously specified documents using the authorized credential.
+         *
+         * This method performs the actual document signing operation with the credential
+         * that was authorized through the [RQESService.Authorized.authorizeCredential] process.
+         * The documents to be signed are those that were provided to
+         * [RQESService.Authorized.getCredentialAuthorizationUrl].
+         *
+         * @return A [Result] containing the [SignedDocuments] if signing is successful,
+         *         or an error if the signing operation failed.
          */
         suspend fun signDocuments(): Result<SignedDocuments>
     }
 
     companion object {
         /**
-         * Create the RQES service.
+         * Creates an instance of the RQES service.
          *
-         * @param serviceEndpointUrl The service endpoint URL.
-         * @param config The CSC client configuration.
-         * @param hashAlgorithm The hash algorithm OID.
-         * @param httpClientFactory The HTTP client factory.
-         * @return The RQES service.
+         * This factory method constructs and configures an RQES service implementation with
+         * the specified parameters.
+         *
+         * @param serviceEndpointUrl The RSSP service endpoint URL.
+         * @param config The Cloud Signature Consortium client configuration.
+         * @param outputPathDir The directory where signed documents will be stored.
+         * @param hashAlgorithm The algorithm OID to use for document hashing, defaults to SHA-256.
+         * @param httpClientFactory Optional custom HTTP client factory for network requests.
+         * @return A configured [RQESService] implementation.
+         * @throws IllegalArgumentException If [outputPathDir] does not point to a valid directory.
          */
         operator fun invoke(
             serviceEndpointUrl: String,
             config: CSCClientConfig,
+            outputPathDir: String,
             hashAlgorithm: HashAlgorithmOID = HashAlgorithmOID.SHA_256,
             httpClientFactory: (() -> HttpClient)? = null,
-        ): RQESService = RQESServiceImpl(
-            serviceEndpointUrl,
-            config,
-            hashAlgorithm,
-            httpClientFactory
-        )
+        ): RQESService {
+            require(File(outputPathDir).isDirectory) {
+                "Output path must be a directory"
+            }
+            return RQESServiceImpl(
+                serviceEndpointUrl,
+                config,
+                outputPathDir,
+                hashAlgorithm,
+                httpClientFactory
+            )
+        }
     }
 }

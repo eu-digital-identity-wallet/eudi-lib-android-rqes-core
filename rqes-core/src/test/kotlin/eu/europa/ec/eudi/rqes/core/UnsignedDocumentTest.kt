@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 European Commission
+ * Copyright (c) 2024-2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import eu.europa.ec.eudi.rqes.ASICContainer
 import eu.europa.ec.eudi.rqes.ConformanceLevel
 import eu.europa.ec.eudi.rqes.SignatureFormat
 import eu.europa.ec.eudi.rqes.SignedEnvelopeProperty
-import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import java.io.File
+import kotlin.io.path.createTempDirectory
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -29,7 +29,8 @@ class UnsignedDocumentTest {
 
     @Test
     fun `test asDocumentToSign transformation`() {
-        val documentFile: File = File.createTempFile(UnsignedDocumentTest::class.simpleName!!, ".pdf")
+        val documentFile: File =
+            File.createTempFile(UnsignedDocumentTest::class.simpleName!!, ".pdf")
         val unsignedDocument = UnsignedDocument(
             file = documentFile,
             label = "my pdf document",
@@ -41,15 +42,15 @@ class UnsignedDocumentTest {
             )
         )
 
-        val documentToSign = unsignedDocument.asDocumentToSign(SigningAlgorithmOID.DSA)
+        val outputPathDir = createTempDirectory().toFile().absolutePath
+        val documentToSign = unsignedDocument.asDocumentToSign(outputPathDir)
 
         assertEquals(SignatureFormat.X, documentToSign.signatureFormat)
         assertEquals(ConformanceLevel.ADES_T, documentToSign.conformanceLevel)
-        assertEquals(SigningAlgorithmOID.DSA, documentToSign.signAlgo)
         assertEquals(SignedEnvelopeProperty.DETACHED, documentToSign.signedEnvelopeProperty)
         assertEquals(ASICContainer.ASIC_S, documentToSign.asicContainer)
-        assertEquals("my pdf document", documentToSign.file.label)
-        assertEquals(documentFile, documentToSign.file.content)
-
+        assertEquals("my pdf document", documentToSign.label)
+        assertEquals(documentFile.absolutePath, documentToSign.documentInputPath)
+        assertEquals(outputPathDir, File(documentToSign.documentOutputPath).parent)
     }
 }

@@ -3,16 +3,21 @@
 # getRSSPMetadata
 
 [androidJvm]\
-open suspend override fun [getRSSPMetadata](get-r-s-s-p-metadata.md)(): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html)&lt;RSSPMetadata&gt;
+open suspend override fun [getRSSPMetadata](get-r-s-s-p-metadata.md)(): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html)&lt;RSSPMetadata&gt;
 
-Get the RSSP metadata. This method is used to get the RSSP metadata. The RSSP metadata contains the information about the RSSP.
+Retrieves metadata from the Remote Signature Service Provider (RSSP).
+
+This method fetches information about the RSSP service capabilities, supported algorithms, identity, and other service-specific details. It's typically used as the initial step to discover service capabilities before starting the authorization workflow.
+
+Implementation details:
+
+1. 
+   Ensures the CSC client is initialized via getOrCreateClient
+2. 
+   Retrieves the metadata from the RSSP
+3. 
+   Returns the metadata wrapped in a [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html)
 
 #### Return
 
-The RSSP metadata as a [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html) of RSSPMetadata.
-
-#### See also
-
-| |
-|---|
-| RSSPMetadata |
+A [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html) containing the RSSPMetadata if successful,     or an error if the retrieval failed

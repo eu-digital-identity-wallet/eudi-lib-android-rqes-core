@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 European Commission
+ * Copyright (c) 2024-2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,40 +18,43 @@ package eu.europa.ec.eudi.rqes.core
 
 import eu.europa.ec.eudi.rqes.ASICContainer
 import eu.europa.ec.eudi.rqes.ConformanceLevel
-import eu.europa.ec.eudi.rqes.Document
 import eu.europa.ec.eudi.rqes.DocumentToSign
 import eu.europa.ec.eudi.rqes.SignatureFormat
 import eu.europa.ec.eudi.rqes.SignedEnvelopeProperty
-import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
+import eu.europa.ec.eudi.rqes.core.UnsignedDocument.Config.Companion.DEFAULT
 import java.io.File
 
 /**
  * Represents a document that is to be signed.
- * @param label The label of the document.
- * @param file The file to be signed.
- * @param signingConfig The configuration for the signing process.
  *
- * @property label The label of the document.
+ * This class encapsulates a file along with its identifying label and configuration
+ * parameters that determine how the document should be signed.
+ *
+ * @property label The identifying label of the document.
  * @property file The file to be signed.
  * @property signingConfig The configuration for the signing process.
  */
 data class UnsignedDocument(
     val label: String,
     val file: File,
-    val signingConfig: Config = Config.DEFAULT
+    val signingConfig: Config = DEFAULT
 ) {
+
+    init {
+        // check that file is not dir and exists
+        require(file.isFile) { "File must be a file" }
+    }
 
     /**
      * Configuration for the signing process.
-     * @param signatureFormat The signature format.
-     * @param conformanceLevel The conformance level.
-     * @param signedEnvelopeProperty The signed envelope property.
-     * @param asicContainer The ASiC container.
      *
-     * @property signatureFormat The signature format.
-     * @property conformanceLevel The conformance level.
-     * @property signedEnvelopeProperty The signed envelope property.
-     * @property asicContainer The ASiC container.
+     * This class defines the parameters that control how a document will be signed,
+     * including format, compliance level, and container specifications.
+     *
+     * @property signatureFormat The signature format to be used.
+     * @property conformanceLevel The conformance level to be applied to the signature.
+     * @property signedEnvelopeProperty The type of envelope property for the signature.
+     * @property asicContainer The Associated Signature Container (ASiC) configuration.
      */
     data class Config(
         val signatureFormat: SignatureFormat,
@@ -76,16 +79,16 @@ data class UnsignedDocument(
 
     /**
      * Converts this [UnsignedDocument] to a [DocumentToSign].
-     * @param signingAlgorithmOID The signing algorithm OID.
      * @return The [DocumentToSign] object.
      */
-    internal fun asDocumentToSign(signingAlgorithmOID: SigningAlgorithmOID): DocumentToSign =
+    internal fun asDocumentToSign(outputPathDir: String): DocumentToSign =
         DocumentToSign(
-            file = Document(file, label),
+            documentInputPath = file.absolutePath,
+            documentOutputPath = File(outputPathDir, "signed_${file.name}").absolutePath,
+            label = label,
             signatureFormat = signingConfig.signatureFormat,
             conformanceLevel = signingConfig.conformanceLevel,
             signedEnvelopeProperty = signingConfig.signedEnvelopeProperty,
             asicContainer = signingConfig.asicContainer,
-            signAlgo = signingAlgorithmOID,
         )
 }

@@ -2,20 +2,12 @@
 
 # Config
 
+[androidJvm]\
 data class [Config](index.md)(val signatureFormat: SignatureFormat, val conformanceLevel: ConformanceLevel, val signedEnvelopeProperty: SignedEnvelopeProperty, val asicContainer: ASICContainer)
 
 Configuration for the signing process.
 
-#### Parameters
-
-androidJvm
-
-| | |
-|---|---|
-| signatureFormat | The signature format. |
-| conformanceLevel | The conformance level. |
-| signedEnvelopeProperty | The signed envelope property. |
-| asicContainer | The ASiC container. |
+This class defines the parameters that control how a document will be signed, including format, compliance level, and container specifications.
 
 ## Constructors
 
@@ -33,7 +25,7 @@ androidJvm
 
 | Name | Summary |
 |---|---|
-| [asicContainer](asic-container.md) | [androidJvm]<br>val [asicContainer](asic-container.md): ASICContainer<br>The ASiC container. |
-| [conformanceLevel](conformance-level.md) | [androidJvm]<br>val [conformanceLevel](conformance-level.md): ConformanceLevel<br>The conformance level. |
-| [signatureFormat](signature-format.md) | [androidJvm]<br>val [signatureFormat](signature-format.md): SignatureFormat<br>The signature format. |
-| [signedEnvelopeProperty](signed-envelope-property.md) | [androidJvm]<br>val [signedEnvelopeProperty](signed-envelope-property.md): SignedEnvelopeProperty<br>The signed envelope property. |
+| [asicContainer](asic-container.md) | [androidJvm]<br>val [asicContainer](asic-container.md): ASICContainer<br>The Associated Signature Container (ASiC) configuration. |
+| [conformanceLevel](conformance-level.md) | [androidJvm]<br>val [conformanceLevel](conformance-level.md): ConformanceLevel<br>The conformance level to be applied to the signature. |
+| [signatureFormat](signature-format.md) | [androidJvm]<br>val [signatureFormat](signature-format.md): SignatureFormat<br>The signature format to be used. |
+| [signedEnvelopeProperty](signed-envelope-property.md) | [androidJvm]<br>val [signedEnvelopeProperty](signed-envelope-property.md): SignedEnvelopeProperty<br>The type of envelope property for the signature. |
