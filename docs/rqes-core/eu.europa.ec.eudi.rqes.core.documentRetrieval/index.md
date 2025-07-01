@@ -1,0 +1,22 @@
+//[rqes-core](../../index.md)/[eu.europa.ec.eudi.rqes.core.documentRetrieval](index.md)
+
+# Package-level declarations
+
+## Types
+
+| Name | Summary |
+|---|---|
+| [DocumentRetrievalService](-document-retrieval-service/index.md) | [androidJvm]<br>interface [DocumentRetrievalService](-document-retrieval-service/index.md)<br>Retrieves documents from the given URI. The documents are then are to be signed using [eu.europa.ec.eudi.rqes.core.RQESService](../eu.europa.ec.eudi.rqes.core/-r-q-e-s-service/index.md). The signed documents are then dispatched through [ResolutionOutcome.dispatch](-resolution-outcome/dispatch.md). |
+| [DocumentRetrievalServiceImpl](-document-retrieval-service-impl/index.md) | [androidJvm]<br>class [DocumentRetrievalServiceImpl](-document-retrieval-service-impl/index.md) : [DocumentRetrievalService](-document-retrieval-service/index.md) |
+| [ResolutionOutcome](-resolution-outcome/index.md) | [androidJvm]<br>interface [ResolutionOutcome](-resolution-outcome/index.md)<br>The outcome of the resolution of the document retrieval. |
+| [ResolutionOutcomeImpl](-resolution-outcome-impl/index.md) | [androidJvm]<br>class [ResolutionOutcomeImpl](-resolution-outcome-impl/index.md)(val resolvedDocuments: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html)&lt;[ResolvedDocument](-resolved-document/index.md)&gt;, requestObject: ResolvedRequestObject, client: DocumentRetrieval) : [ResolutionOutcome](-resolution-outcome/index.md)<br>Implementation of the ResolutionOutcome interface. |
+| [ResolvedDocument](-resolved-document/index.md) | [androidJvm]<br>data class [ResolvedDocument](-resolved-document/index.md)(val location: DocumentLocation, val digest: DocumentDigest, val file: [File](https://developer.android.com/reference/kotlin/java/io/File.html))<br>Represents a resolved document. |
+| [X509CertificateTrustImpl](-x509-certificate-trust-impl/index.md) | [androidJvm]<br>class [X509CertificateTrustImpl](-x509-certificate-trust-impl/index.md)(val trustedCertificates: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html)&lt;[X509Certificate](https://developer.android.com/reference/kotlin/java/security/cert/X509Certificate.html)&gt;, logException: ([Throwable](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-throwable/index.html)) -&gt; [Unit](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html)? = null) : X509CertificateTrust |
+
+## Functions
+
+| Name | Summary |
+|---|---|
+| [toUnsignedDocument](to-unsigned-document.md) | [androidJvm]<br>fun [ResolvedDocument](-resolved-document/index.md).[toUnsignedDocument](to-unsigned-document.md)(label: [String](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-string/index.html), signingConfig: [UnsignedDocument.Config](../eu.europa.ec.eudi.rqes.core/-unsigned-document/-config/index.md)? = null): [UnsignedDocument](../eu.europa.ec.eudi.rqes.core/-unsigned-document/index.md)<br>Convert a [ResolvedDocument](-resolved-document/index.md) to an [UnsignedDocument](../eu.europa.ec.eudi.rqes.core/-unsigned-document/index.md). |
+| [toUnsignedDocuments](to-unsigned-documents.md) | [androidJvm]<br>fun [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html)&lt;[ResolvedDocument](-resolved-document/index.md)&gt;.[toUnsignedDocuments](to-unsigned-documents.md)(signingConfig: [UnsignedDocument.Config](../eu.europa.ec.eudi.rqes.core/-unsigned-document/-config/index.md)? = null): [UnsignedDocuments](../eu.europa.ec.eudi.rqes.core/-unsigned-documents/index.md)<br>Convert a list of [ResolvedDocument](-resolved-document/index.md) to [UnsignedDocuments](../eu.europa.ec.eudi.rqes.core/-unsigned-documents/index.md). |
+| [X509CertificateTrust](-x509-certificate-trust.md) | [androidJvm]<br>fun [X509CertificateTrust](-x509-certificate-trust.md)(trustedCertificates: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html)&lt;[X509Certificate](https://developer.android.com/reference/kotlin/java/security/cert/X509Certificate.html)&gt;, logException: ([Throwable](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-throwable/index.html)) -&gt; [Unit](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-unit/index.html)? = null): X509CertificateTrust |

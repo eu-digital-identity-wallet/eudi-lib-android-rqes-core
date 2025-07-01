@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 European Commission
+ * Copyright (c) 2024-2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,29 +27,37 @@ import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import eu.europa.ec.eudi.rqes.core.RQESServiceImpl.CredentialAuthorizedImpl
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
-import java.io.InputStream
+import java.io.File
 import java.time.Instant
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class CredentialAuthorizedImplTest {
 
+    val outputPath = System.getProperty("java.io.tmpdir") as String
+
     @Test
     fun `test signDocuments returns the SignedDocuments for SCAL1`() = runTest {
-
+        val documentOutputPathMock = outputPath + File.pathSeparator + "singed_document1.pdf"
+        val labelMock = "label1"
         val mockClient = mockk<CSCClient>(relaxed = true)
-        val documentsToSignList = listOf<DocumentToSign>(mockk())
+        val documentsToSignList = listOf<DocumentToSign>(mockk {
+            every { label } returns labelMock
+            every { documentOutputPath } returns documentOutputPathMock
+        })
         val documentDigestList = mockk<DocumentDigestList> {
             every { hashAlgorithmOID } returns HashAlgorithmOID.SHA_256
             every { hashCalculationTime } returns Instant.now()
         }
         val signatureList = mockk<SignaturesList> {
-            every { signatures } returns listOf<Signature>(mockk())
+            every { signatures } returns listOf(mockk())
         }
-        val signedDocumentsInputStreams = listOf<InputStream>(mockk())
         val credentialAuthorized = mockk<CredentialAuthorized.SCAL1>()
 
         val authorizedCredentialService = CredentialAuthorizedImpl(
@@ -72,16 +80,9 @@ class CredentialAuthorizedImplTest {
 
         coEvery {
             with(mockClient) {
-                getSignedDocuments(
-                    documents = documentsToSignList,
-                    signatures = signatureList.signatures,
-                    credentialCertificate = credentialAuthorized.credentialCertificate,
-//                        hashAlgorithmOID = documentDigestList.hashAlgorithmOID,
-                    hashAlgorithmOID = any(), // TODO: Fix this
-                    signatureTimestamp = documentDigestList.hashCalculationTime
-                )
+                createSignedDocuments(signatureList.signatures)
             }
-        } returns signedDocumentsInputStreams
+        } just runs
 
 
         val result = authorizedCredentialService.signDocuments()
@@ -89,14 +90,21 @@ class CredentialAuthorizedImplTest {
 
         val signedDocuments = result.getOrThrow()
         assertEquals(1, signedDocuments.size)
-        assertEquals(signedDocumentsInputStreams[0], signedDocuments[0])
+        val firstSignedDocument = signedDocuments[labelMock]
+        assertNotNull(firstSignedDocument)
+        assertEquals(documentOutputPathMock, firstSignedDocument.absolutePath)
 
     }
 
     @Test
     fun `test signDocuments returns the SignedDocuments for SCAL2`() = runTest {
+        val documentOutputPathMock = outputPath + File.pathSeparator + "singed_document1.pdf"
+        val labelMock = "label1"
         val mockClient = mockk<CSCClient>(relaxed = true)
-        val documentsToSignList = listOf<DocumentToSign>(mockk())
+        val documentsToSignList = listOf<DocumentToSign>(mockk {
+            every { label } returns labelMock
+            every { documentOutputPath } returns documentOutputPathMock
+        })
         val documentDigestList = mockk<DocumentDigestList> {
             every { hashAlgorithmOID } returns HashAlgorithmOID.SHA_256
             every { hashCalculationTime } returns Instant.now()
@@ -104,7 +112,6 @@ class CredentialAuthorizedImplTest {
         val signatureList = mockk<SignaturesList> {
             every { signatures } returns listOf<Signature>(mockk())
         }
-        val signedDocumentsInputStreams = listOf<InputStream>(mockk())
         val credentialAuthorized = mockk<CredentialAuthorized.SCAL2>()
 
         val authorizedCredentialService = CredentialAuthorizedImpl(
@@ -124,16 +131,9 @@ class CredentialAuthorizedImplTest {
 
         coEvery {
             with(mockClient) {
-                getSignedDocuments(
-                    documents = documentsToSignList,
-                    signatures = signatureList.signatures,
-                    credentialCertificate = credentialAuthorized.credentialCertificate,
-//                        hashAlgorithmOID = documentDigestList.hashAlgorithmOID,
-                    hashAlgorithmOID = any(), // TODO: Fix this
-                    signatureTimestamp = documentDigestList.hashCalculationTime
-                )
+                createSignedDocuments(signatureList.signatures)
             }
-        } returns signedDocumentsInputStreams
+        } just runs
 
 
         val result = authorizedCredentialService.signDocuments()
@@ -141,7 +141,9 @@ class CredentialAuthorizedImplTest {
 
         val signedDocuments = result.getOrThrow()
         assertEquals(1, signedDocuments.size)
-        assertEquals(signedDocumentsInputStreams[0], signedDocuments[0])
+        val firstSignedDocument = signedDocuments[labelMock]
+        assertNotNull(firstSignedDocument)
+        assertEquals(documentOutputPathMock, firstSignedDocument.absolutePath)
 
     }
 }

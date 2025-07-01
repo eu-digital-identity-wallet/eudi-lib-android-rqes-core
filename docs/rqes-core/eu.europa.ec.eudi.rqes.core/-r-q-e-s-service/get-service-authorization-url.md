@@ -3,10 +3,12 @@
 # getServiceAuthorizationUrl
 
 [androidJvm]\
-abstract suspend fun [getServiceAuthorizationUrl](get-service-authorization-url.md)(): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html)&lt;HttpsUrl&gt;
+abstract suspend fun [getServiceAuthorizationUrl](get-service-authorization-url.md)(): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html)&lt;HttpsUrl&gt;
 
-Get the service authorization URL. This method is used to get the service authorization URL. The service authorization URL is used to authorize the service to access the user's credentials.
+Retrieves the service authorization URL.
+
+This URL is used to initiate the authorization flow, allowing the service to access the user's credentials. The user should be redirected to this URL to complete the authorization process.
 
 #### Return
 
-The service authorization URL as a [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html) of HttpsUrl.
+A [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html) containing an HttpsUrl for authorization if successful,     or an error if the operation failed.

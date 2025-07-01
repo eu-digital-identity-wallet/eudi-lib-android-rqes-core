@@ -16,7 +16,7 @@ androidJvm
 | unsignedDocuments | The vararg [UnsignedDocument](../-unsigned-document/index.md)s to be signed. |
 
 [androidJvm]\
-constructor(unsignedDocuments: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[UnsignedDocument](../-unsigned-document/index.md)&gt;)
+constructor(unsignedDocuments: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html)&lt;[UnsignedDocument](../-unsigned-document/index.md)&gt;)
 
 Creates a new [UnsignedDocuments](index.md) with the given list of [UnsignedDocument](../-unsigned-document/index.md)s and hash algorithm.
 

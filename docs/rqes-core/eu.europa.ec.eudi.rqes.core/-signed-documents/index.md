@@ -2,9 +2,11 @@
 
 # SignedDocuments
 
-class [SignedDocuments](index.md)(signedDocuments: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt;) : [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt; 
+class [SignedDocuments](index.md) : [Map](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-map/index.html)&lt;[DocumentLabel](../-document-label/index.md), [File](https://developer.android.com/reference/kotlin/java/io/File.html)&gt; 
 
-Represents a list of signed documents.
+Represents a collection of signed documents organized as a map.
+
+This class provides access to signed document files, mapped by their document labels. It implements the [Map](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-map/index.html) interface, allowing direct access to documents using their labels as keys.
 
 #### Parameters
 
@@ -12,35 +14,24 @@ androidJvm
 
 | | |
 |---|---|
-| signedDocuments | The list of [InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html) of signed documents' content. |
-
-## Constructors
-
-| | |
-|---|---|
-| [SignedDocuments](-signed-documents.md) | [androidJvm]<br>constructor(signedDocuments: [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt;)<br>Creates a new instance of [SignedDocuments](index.md) with the given list of signed documents. |
+| signedDocuments | A map where keys are document labels and values are the corresponding signed document files. |
 
 ## Properties
 
 | Name | Summary |
 |---|---|
-| [size](../-unsigned-documents/index.md#844915858%2FProperties%2F313640094) | [androidJvm]<br>open override val [size](../-unsigned-documents/index.md#844915858%2FProperties%2F313640094): [Int](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html) |
+| [entries](index.md#43098407%2FProperties%2F313640094) | [androidJvm]<br>open override val [entries](index.md#43098407%2FProperties%2F313640094): [Set](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-set/index.html)&lt;[Map.Entry](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-map/-entry/index.html)&lt;[DocumentLabel](../-document-label/index.md), [File](https://developer.android.com/reference/kotlin/java/io/File.html)&gt;&gt; |
+| [keys](index.md#-915758449%2FProperties%2F313640094) | [androidJvm]<br>open override val [keys](index.md#-915758449%2FProperties%2F313640094): [Set](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-set/index.html)&lt;[DocumentLabel](../-document-label/index.md)&gt; |
+| [size](index.md#-157521630%2FProperties%2F313640094) | [androidJvm]<br>open override val [size](index.md#-157521630%2FProperties%2F313640094): [Int](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-int/index.html) |
+| [values](index.md#1310951841%2FProperties%2F313640094) | [androidJvm]<br>open override val [values](index.md#1310951841%2FProperties%2F313640094): [Collection](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-collection/index.html)&lt;[File](https://developer.android.com/reference/kotlin/java/io/File.html)&gt; |
 
 ## Functions
 
 | Name | Summary |
 |---|---|
-| [contains](index.md#1234209280%2FFunctions%2F313640094) | [androidJvm]<br>open operator override fun [contains](index.md#1234209280%2FFunctions%2F313640094)(element: [InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)): [Boolean](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html) |
-| [containsAll](index.md#350214111%2FFunctions%2F313640094) | [androidJvm]<br>open override fun [containsAll](index.md#350214111%2FFunctions%2F313640094)(elements: [Collection](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-collection/index.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt;): [Boolean](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html) |
-| [forEach](index.md#-485130965%2FFunctions%2F313640094) | [androidJvm]<br>open fun [forEach](index.md#-485130965%2FFunctions%2F313640094)(p0: [Consumer](https://developer.android.com/reference/kotlin/java/util/function/Consumer.html)&lt;in [InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt;) |
-| [get](../-unsigned-documents/index.md#961975567%2FFunctions%2F313640094) | [androidJvm]<br>open operator override fun [get](../-unsigned-documents/index.md#961975567%2FFunctions%2F313640094)(index: [Int](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)): [InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html) |
-| [indexOf](index.md#-925884714%2FFunctions%2F313640094) | [androidJvm]<br>open override fun [indexOf](index.md#-925884714%2FFunctions%2F313640094)(element: [InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)): [Int](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html) |
-| [isEmpty](../-unsigned-documents/index.md#-1000881820%2FFunctions%2F313640094) | [androidJvm]<br>open override fun [isEmpty](../-unsigned-documents/index.md#-1000881820%2FFunctions%2F313640094)(): [Boolean](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html) |
-| [iterator](../-unsigned-documents/index.md#-1577986619%2FFunctions%2F313640094) | [androidJvm]<br>open operator override fun [iterator](../-unsigned-documents/index.md#-1577986619%2FFunctions%2F313640094)(): [Iterator](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-iterator/index.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt; |
-| [lastIndexOf](index.md#1874820448%2FFunctions%2F313640094) | [androidJvm]<br>open override fun [lastIndexOf](index.md#1874820448%2FFunctions%2F313640094)(element: [InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)): [Int](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html) |
-| [listIterator](../-unsigned-documents/index.md#-236165689%2FFunctions%2F313640094) | [androidJvm]<br>open override fun [listIterator](../-unsigned-documents/index.md#-236165689%2FFunctions%2F313640094)(): [ListIterator](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list-iterator/index.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt;<br>open override fun [listIterator](../-unsigned-documents/index.md#845091493%2FFunctions%2F313640094)(index: [Int](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)): [ListIterator](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list-iterator/index.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt; |
-| [parallelStream](../-unsigned-documents/index.md#-1592339412%2FFunctions%2F313640094) | [androidJvm]<br>open fun [parallelStream](../-unsigned-documents/index.md#-1592339412%2FFunctions%2F313640094)(): [Stream](https://developer.android.com/reference/kotlin/java/util/stream/Stream.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt; |
-| [spliterator](../-unsigned-documents/index.md#703021258%2FFunctions%2F313640094) | [androidJvm]<br>open override fun [spliterator](../-unsigned-documents/index.md#703021258%2FFunctions%2F313640094)(): [Spliterator](https://developer.android.com/reference/kotlin/java/util/Spliterator.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt; |
-| [stream](../-unsigned-documents/index.md#135225651%2FFunctions%2F313640094) | [androidJvm]<br>open fun [stream](../-unsigned-documents/index.md#135225651%2FFunctions%2F313640094)(): [Stream](https://developer.android.com/reference/kotlin/java/util/stream/Stream.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt; |
-| [subList](../-unsigned-documents/index.md#423386006%2FFunctions%2F313640094) | [androidJvm]<br>open override fun [subList](../-unsigned-documents/index.md#423386006%2FFunctions%2F313640094)(fromIndex: [Int](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html), toIndex: [Int](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html)): [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;[InputStream](https://developer.android.com/reference/kotlin/java/io/InputStream.html)&gt; |
-| [toArray](../-unsigned-documents/index.md#-1215154575%2FFunctions%2F313640094) | [androidJvm]<br>open fun &lt;[T](../-unsigned-documents/index.md#-1215154575%2FFunctions%2F313640094) : [Any](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html)&gt; [~~toArray~~](../-unsigned-documents/index.md#-1215154575%2FFunctions%2F313640094)(p0: [IntFunction](https://developer.android.com/reference/kotlin/java/util/function/IntFunction.html)&lt;[Array](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html)&lt;[T](../-unsigned-documents/index.md#-1215154575%2FFunctions%2F313640094)&gt;&gt;): [Array](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html)&lt;[T](../-unsigned-documents/index.md#-1215154575%2FFunctions%2F313640094)&gt; |
+| [containsKey](index.md#182506349%2FFunctions%2F313640094) | [androidJvm]<br>open override fun [containsKey](index.md#182506349%2FFunctions%2F313640094)(key: [DocumentLabel](../-document-label/index.md)): [Boolean](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean/index.html) |
+| [containsValue](index.md#1808941901%2FFunctions%2F313640094) | [androidJvm]<br>open override fun [containsValue](index.md#1808941901%2FFunctions%2F313640094)(value: [File](https://developer.android.com/reference/kotlin/java/io/File.html)): [Boolean](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean/index.html) |
+| [forEach](index.md#1707709414%2FFunctions%2F313640094) | [androidJvm]<br>open fun [forEach](index.md#1707709414%2FFunctions%2F313640094)(p0: [BiConsumer](https://developer.android.com/reference/kotlin/java/util/function/BiConsumer.html)&lt;in [DocumentLabel](../-document-label/index.md), in [File](https://developer.android.com/reference/kotlin/java/io/File.html)&gt;) |
+| [get](index.md#-1885167485%2FFunctions%2F313640094) | [androidJvm]<br>open operator override fun [get](index.md#-1885167485%2FFunctions%2F313640094)(key: [DocumentLabel](../-document-label/index.md)): [File](https://developer.android.com/reference/kotlin/java/io/File.html)? |
+| [getOrDefault](index.md#1087765374%2FFunctions%2F313640094) | [androidJvm]<br>open fun [getOrDefault](index.md#1087765374%2FFunctions%2F313640094)(key: [DocumentLabel](../-document-label/index.md), defaultValue: [File](https://developer.android.com/reference/kotlin/java/io/File.html)): [File](https://developer.android.com/reference/kotlin/java/io/File.html) |
+| [isEmpty](index.md#-1708477740%2FFunctions%2F313640094) | [androidJvm]<br>open override fun [isEmpty](index.md#-1708477740%2FFunctions%2F313640094)(): [Boolean](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-boolean/index.html) |

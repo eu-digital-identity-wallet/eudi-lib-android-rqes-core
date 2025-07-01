@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 European Commission
+ * Copyright (c) 2024-2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import eu.europa.ec.eudi.rqes.ServiceAuthorizationRequestPrepared
 import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import io.ktor.client.HttpClient
 import org.jetbrains.annotations.VisibleForTesting
+import java.io.File
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -45,20 +46,20 @@ import kotlin.uuid.Uuid
  *
  * @property serviceEndpointUrl The RQES service endpoint URL.
  * @property config The RQES service configuration.
+ * @property outputPathDir Directory where signed documents will be stored.
  * @property hashAlgorithm The algorithm OID, for hashing the documents.
- * @property signingAlgorithm The algorithm OID, for signing the documents.
  * @property clientFactory The HTTP client factory. If this property is null, the default HTTP client factory will be used.
  *
- * @constructor Creates a RQES service implementation.
  * @param serviceEndpointUrl The RQES service endpoint URL.
  * @param config The RQES service configuration.
+ * @param outputPathDir Directory where signed documents will be stored.
  * @param hashAlgorithm The algorithm OID, for hashing the documents.
- * @param signingAlgorithm The algorithm OID, for signing the documents.
  * @param clientFactory The HTTP client factory. If this property is null, the default HTTP client factory will be used.
  */
 class RQESServiceImpl(
     @VisibleForTesting internal val serviceEndpointUrl: String,
     @VisibleForTesting internal val config: CSCClientConfig,
+    @VisibleForTesting internal val outputPathDir: String,
     override val hashAlgorithm: HashAlgorithmOID,
     @VisibleForTesting internal val clientFactory: (() -> HttpClient)? = null
 ) : RQESService {
@@ -84,6 +85,16 @@ class RQESServiceImpl(
      * This method is used to get or create the client.
      * @return The client.
      */
+    /**
+     * Gets or creates the CSC client for communicating with the RSSP.
+     *
+     * This method implements lazy initialization of the CSC client, creating it only when needed
+     * and reusing the same instance for subsequent calls. It initializes the client using the
+     * OAuth2 authentication flow with the configured service endpoint and client configuration.
+     *
+     * @return An initialized [CSCClient] for communicating with the RSSP
+     * @throws Throwable if client initialization fails
+     */
     @Throws(Throwable::class)
     @VisibleForTesting
     internal suspend fun getOrCreateClient(): CSCClient {
@@ -97,6 +108,22 @@ class RQESServiceImpl(
         return client
     }
 
+    /**
+     * Retrieves metadata from the Remote Signature Service Provider (RSSP).
+     *
+     * This method fetches information about the RSSP service capabilities, supported
+     * algorithms, identity, and other service-specific details. It's typically used
+     * as the initial step to discover service capabilities before starting the
+     * authorization workflow.
+     *
+     * Implementation details:
+     * 1. Ensures the CSC client is initialized via [getOrCreateClient]
+     * 2. Retrieves the metadata from the RSSP
+     * 3. Returns the metadata wrapped in a [Result]
+     *
+     * @return A [Result] containing the [RSSPMetadata] if successful,
+     *         or an error if the retrieval failed
+     */
     override suspend fun getRSSPMetadata(): Result<RSSPMetadata> {
         return try {
             Result.success(getOrCreateClient().rsspMetadata)
@@ -105,6 +132,22 @@ class RQESServiceImpl(
         }
     }
 
+    /**
+     * Generates a service authorization URL for initiating the user authorization flow.
+     *
+     * This method is the first step in the authorization workflow. It:
+     * 1. Generates a random server state value for security validation
+     * 2. Prepares a service authorization request through the CSC client
+     * 3. Stores the prepared request for later use in [authorizeService]
+     *
+     * The returned URL should be presented to the user (typically by redirecting them to it),
+     * allowing them to authorize the application to access the remote signature service.
+     * After authorization, the user will be redirected back with an authorization code
+     * that should be passed to [authorizeService].
+     *
+     * @return A [Result] containing the [HttpsUrl] for the authorization endpoint if successful,
+     *         or an error if the request preparation failed
+     */
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun getServiceAuthorizationUrl(): Result<HttpsUrl> {
         serverState = Uuid.random().toString()
@@ -122,6 +165,23 @@ class RQESServiceImpl(
         }
     }
 
+    /**
+     * Completes the service authorization process by exchanging the authorization code for service access.
+     *
+     * This method requires that [getServiceAuthorizationUrl] has been called previously to initialize
+     * the server state and prepare the authorization request. It exchanges the authorization code
+     * received after user authentication for service access credentials.
+     *
+     * Implementation workflow:
+     * 1. Verifies that the server state has been initialized through [getServiceAuthorizationUrl]
+     * 2. Uses the prepared authorization request to exchange the code for access
+     * 3. Creates an [AuthorizedImpl] instance with the authorized service access
+     *
+     * @param authorizationCode The authorization code received after user completes the authorization flow
+     * @return A [Result] containing the [RQESService.Authorized] implementation if successful,
+     *         or an error if the authorization process failed
+     * @throws IllegalStateException If [getServiceAuthorizationUrl] was not called before this method
+     */
     override suspend fun authorizeService(authorizationCode: AuthorizationCode): Result<RQESService.Authorized> {
         return try {
             check(::serverState.isInitialized) {
@@ -137,6 +197,7 @@ class RQESServiceImpl(
                             serverState = serverState,
                             client = this@with,
                             serviceAccessAuthorized = authorized,
+                            outputPathDir = outputPathDir,
                             hashAlgorithm = this@RQESServiceImpl.hashAlgorithm,
                         )
                     )
@@ -150,26 +211,24 @@ class RQESServiceImpl(
 
 
     /**
-     * The authorized service implementation.
+     * Implementation of the [RQESService.Authorized] interface that provides access to
+     * user credentials and document signing operations after successful service authorization.
      *
-     * @property serverState The server state.
-     * @property client The client.
-     * @property serviceAccessAuthorized The service access authorized.
-     * @property hashAlgorithm The algorithm OID, for hashing the documents.
-     * @property documentsToSign The documents to sign.
-     * @property documentDigestList The document digest list.
-     * @property credAuthRequestPrepared The credential authorization request prepared.
+     * This class maintains state across the credential selection and document signing workflow,
+     * storing information about documents to be signed, credential authorization state, and
+     * cryptographic parameters needed for the signing operation.
      *
-     * @constructor Creates an authorized service implementation.
-     * @param serverState The server state.
-     * @param client The client.
-     * @param serviceAccessAuthorized The service access authorized.
-     * @param hashAlgorithm The algorithm OID, for hashing the documents.
+     * @property serverState Security state token used for validating authorization responses.
+     * @property client The CSC client for communicating with the RSSP.
+     * @property serviceAccessAuthorized The authorized service access credentials from OAuth2 flow.
+     * @property outputPathDir Directory where signed documents will be stored.
+     * @property hashAlgorithm The algorithm used for creating document hashes.
      */
     class AuthorizedImpl(
         @VisibleForTesting internal val serverState: String,
         @VisibleForTesting internal val client: CSCClient,
         @VisibleForTesting internal val serviceAccessAuthorized: ServiceAccessAuthorized,
+        @VisibleForTesting internal val outputPathDir: String,
         val hashAlgorithm: HashAlgorithmOID,
     ) : RQESService.Authorized {
 
@@ -185,6 +244,23 @@ class RQESServiceImpl(
         @VisibleForTesting
         internal var signingAlgorithmOID: SigningAlgorithmOID? = null
 
+        /**
+         * Retrieves the list of available credentials for the authorized user.
+         *
+         * This method queries the RSSP for credentials associated with the authorized user
+         * that can be used for document signing. By default, only valid credentials are returned
+         * if no specific request criteria are provided.
+         *
+         * Implementation workflow:
+         * 1. Uses the authorized service access to list credentials from the RSSP
+         * 2. Applies any filtering criteria specified in the request
+         * 3. Returns the list of matching credentials
+         *
+         * @param request Optional filter criteria for the credentials list. If null, all valid
+         *                credentials will be returned.
+         * @return A [Result] containing a list of [CredentialInfo] objects if successful,
+         *         or an error if the retrieval failed
+         */
         override suspend fun listCredentials(request: CredentialsListRequest?): Result<List<CredentialInfo>> {
             return try {
                 with(client) {
@@ -199,44 +275,80 @@ class RQESServiceImpl(
             }
         }
 
+        /**
+         * Generates a credential authorization URL for document signing.
+         *
+         * This method prepares the documents for signing with the specified credential and
+         * creates an authorization URL for the user to approve the signing operation. It:
+         * 1. Selects an appropriate signing algorithm from those supported by the credential
+         * 2. Prepares the documents for signing and converts them to the appropriate format
+         * 3. Calculates cryptographic hashes of the documents using the configured algorithm
+         * 4. Prepares a credential authorization request with the document hashes
+         * 5. Stores the prepared request and document information for later use
+         *
+         * The returned URL should be presented to the user (typically by redirecting them to it),
+         * allowing them to authorize the use of their specific credential for signing.
+         * After authorization, the user will be redirected back with an authorization code
+         * that should be passed to [authorizeCredential].
+         *
+         * @param credential The credential to be used for signing the documents
+         * @param documents The collection of unsigned documents to be signed
+         * @return A [Result] containing the [HttpsUrl] for credential authorization if successful,
+         *         or an error if preparation failed
+         */
         override suspend fun getCredentialAuthorizationUrl(
             credential: CredentialInfo,
             documents: UnsignedDocuments,
-            signingAlgorithmOID: SigningAlgorithmOID?
         ): Result<HttpsUrl> {
             return try {
-                (signingAlgorithmOID ?: credential.key.supportedAlgorithms.first())
-                    .also(this::signingAlgorithmOID::set)
-                    .let { signAlgorithm ->
-                        with(client) {
-                            this@AuthorizedImpl.documentsToSign = documents.asDocumentToSignList(
-                                signingAlgorithmOID = signAlgorithm
-                            )
-                            this@AuthorizedImpl.documentDigestList = calculateDocumentHashes(
-                                documents = documentsToSign,
-                                hashAlgorithmOID = hashAlgorithm,
-                                credentialCertificate = credential.certificate
-                            )
-                            val authorizationCodeURL = prepareCredentialAuthorizationRequest(
-                                credentialAuthorizationSubject = CredentialAuthorizationSubject(
-                                    credentialRef = CredentialRef.ByCredentialID(credential.credentialID),
-                                    documentDigestList = documentDigestList,
-                                ),
-                                walletState = serverState
-                            )
-                                .getOrThrow()
-                                .also { credAuthRequestPrepared = it }
-                                .authorizationRequestPrepared
-                                .authorizationCodeURL
+                signingAlgorithmOID = credential.key.supportedAlgorithms.first()
+                with(client) {
+                    this@AuthorizedImpl.documentsToSign =
+                        documents.asDocumentToSignList(outputPathDir)
+                    this@AuthorizedImpl.documentDigestList = calculateDocumentHashes(
+                        documents = documentsToSign,
+                        hashAlgorithmOID = hashAlgorithm,
+                        credentialCertificate = credential.certificate
+                    )
+                    val authorizationCodeURL = prepareCredentialAuthorizationRequest(
+                        credentialAuthorizationSubject = CredentialAuthorizationSubject(
+                            credentialRef = CredentialRef.ByCredentialID(credential.credentialID),
+                            documentDigestList = documentDigestList,
+                        ),
+                        walletState = serverState
+                    )
+                        .getOrThrow()
+                        .also { credAuthRequestPrepared = it }
+                        .authorizationRequestPrepared
+                        .authorizationCodeURL
 
-                            Result.success(authorizationCodeURL)
-                        }
-                    }
+                    Result.success(authorizationCodeURL)
+                }
             } catch (e: Throwable) {
                 Result.failure(e)
             }
         }
 
+        /**
+         * Completes the credential authorization process for document signing.
+         *
+         * This method requires that [getCredentialAuthorizationUrl] has been called previously to
+         * initialize the document hashes and prepare the credential authorization request. It exchanges
+         * the authorization code received after user authentication for credential access credentials.
+         *
+         * Implementation workflow:
+         * 1. Verifies that all required state has been initialized through [getCredentialAuthorizationUrl]
+         * 2. Uses the prepared request to exchange the code for credential access
+         * 3. Creates a [CredentialAuthorizedImpl] instance with the authorized credential and document info
+         *
+         * This is the final authorization step before actual document signing can occur.
+         *
+         * @param authorizationCode The authorization code received after user completes the credential authorization flow
+         * @return A [Result] containing a [RQESService.CredentialAuthorized] implementation if successful,
+         *         or an error if the authorization process failed
+         * @throws IllegalStateException If [getCredentialAuthorizationUrl] was not called before this method
+         *         or if required state is missing
+         */
         override suspend fun authorizeCredential(authorizationCode: AuthorizationCode): Result<RQESService.CredentialAuthorized> {
             return try {
                 checkAll(
@@ -271,20 +383,24 @@ class RQESServiceImpl(
     }
 
     /**
-     * The credential authorized implementation.
+     * Implementation of the [RQESService.CredentialAuthorized] interface that performs
+     * document signing operations with an authorized credential.
      *
-     * @property client The client.
-     * @property documentsToSign The documents to sign.
-     * @property documentDigestList The document digest list.
-     * @property credentialAuthorized The credential authorized.
-     * @property signingAlgorithm The algorithm OID, for signing the documents.
+     * This class holds all the information needed for signing the documents that were
+     * specified during the credential authorization process, including the document content,
+     * cryptographic digests, and the authorized credential for signing.
      *
-     * @constructor Creates a credential authorized implementation.
-     * @param client The client.
-     * @param documentsToSign The documents to sign.
-     * @param documentDigestList The document digest list.
-     * @param credentialAuthorized The credential authorized.
-     * @param signingAlgorithm The algorithm OID, for signing the documents.
+     * @property client The CSC client for communicating with the RSSP.
+     * @property documentsToSign List of documents prepared for signing.
+     * @property documentDigestList Document digests prepared for the signing request.
+     * @property credentialAuthorized The authorized credential access for signing.
+     * @property signingAlgorithm The algorithm to be used for the signing operation.
+     *
+     * @param client The CSC client for communicating with the RSSP.
+     * @param documentsToSign List of documents prepared for signing.
+     * @param documentDigestList Document digests prepared for the signing request.
+     * @param credentialAuthorized The authorized credential access for signing.
+     * @param signingAlgorithm The algorithm to be used for the signing operation.
      */
     class CredentialAuthorizedImpl(
         @VisibleForTesting internal val client: CSCClient,
@@ -293,6 +409,22 @@ class RQESServiceImpl(
         @VisibleForTesting internal val credentialAuthorized: CredentialAuthorized,
         val signingAlgorithm: SigningAlgorithmOID
     ) : RQESService.CredentialAuthorized {
+
+        /**
+         * Signs the previously specified documents using the authorized credential.
+         *
+         * This method performs the actual document signing operation by:
+         * 1. Using the authorized credential to sign the document hashes
+         * 2. Creating the final signed documents with the obtained signatures
+         * 3. Returning the collection of signed document files
+         *
+         * The signing process adapts based on the credential's Signature Creation Assurance Level (SCAL):
+         * - For SCAL1 credentials, the document hashes are sent with the signing request
+         * - For SCAL2 credentials, the hashes were previously uploaded during authorization
+         *
+         * @return A [Result] containing [SignedDocuments] with the paths to the signed files if successful,
+         *         or an error if the signing operation failed
+         */
         override suspend fun signDocuments(): Result<SignedDocuments> {
             return try {
                 with(client) {
@@ -310,13 +442,10 @@ class RQESServiceImpl(
 
                     }.getOrThrow()
 
-                    val signedDocuments = getSignedDocuments(
-                        documents = documentsToSign,
-                        signatures = signatureList.signatures,
-                        credentialCertificate = credentialAuthorized.credentialCertificate,
-                        hashAlgorithmOID = documentDigestList.hashAlgorithmOID,
-                        signatureTimestamp = documentDigestList.hashCalculationTime
-                    ).let { SignedDocuments(it) }
+                    createSignedDocuments(signatures = signatureList.signatures)
+                    val signedDocuments = documentsToSign.associate {
+                        it.label to File(it.documentOutputPath)
+                    }.let { SignedDocuments(it) }
                     Result.success(signedDocuments)
                 }
             } catch (e: Throwable) {

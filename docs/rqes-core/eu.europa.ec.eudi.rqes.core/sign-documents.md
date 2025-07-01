@@ -3,7 +3,7 @@
 # signDocuments
 
 [androidJvm]\
-suspend fun [RQESService.Authorized](-r-q-e-s-service/-authorized/index.md).[signDocuments](sign-documents.md)(authorizationCode: AuthorizationCode): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html)&lt;[SignedDocuments](-signed-documents/index.md)&gt;
+suspend fun [RQESService.Authorized](-r-q-e-s-service/-authorized/index.md).[signDocuments](sign-documents.md)(authorizationCode: AuthorizationCode): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html)&lt;[SignedDocuments](-signed-documents/index.md)&gt;
 
 Sign the documents with the given authorization code.
 

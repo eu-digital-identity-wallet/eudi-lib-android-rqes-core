@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 European Commission
+ * Copyright (c) 2024-2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ class RQESServiceImplTest {
 
     val mockClient = mockk<CSCClient>(relaxed = true)
     lateinit var service: RQESServiceImpl
+    val outputPathDir = "/tmp"
 
     @BeforeTest
     fun setUp() {
@@ -59,6 +60,7 @@ class RQESServiceImplTest {
                 authFlowRedirectionURI = URI("rqes:redirect"),
                 scaBaseURL = URL("https://example.com/sca"),
             ),
+            outputPathDir = outputPathDir,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
         )
 

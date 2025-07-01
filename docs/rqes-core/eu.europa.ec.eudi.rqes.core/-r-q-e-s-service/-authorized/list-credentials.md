@@ -3,15 +3,15 @@
 # listCredentials
 
 [androidJvm]\
-abstract suspend fun [listCredentials](list-credentials.md)(request: CredentialsListRequest? = null): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html)&lt;[List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html)&lt;CredentialInfo&gt;&gt;
+abstract suspend fun [listCredentials](list-credentials.md)(request: CredentialsListRequest? = null): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html)&lt;[List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin.collections/-list/index.html)&lt;CredentialInfo&gt;&gt;
 
-List the credentials. This method is used to list the credentials. The credentials are the user's credentials that can be used to sign the documents.
+Retrieves a list of available signing credentials.
 
-Method accepts CredentialsListRequest as a parameter to filter the credentials. If the request is null, all the valid credentials should be returned.
+Returns all credentials that can be used for document signing, optionally filtered by the provided request parameters.
 
 #### Return
 
-The list of credentials as a [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-result/index.html) of [List](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html) of CredentialInfo.
+A [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html) containing a list of CredentialInfo objects if successful,     or an error if the operation failed.
 
 #### Parameters
 
@@ -19,4 +19,4 @@ androidJvm
 
 | | |
 |---|---|
-| request | The credentials list request. |
+| request | Optional filter criteria for the credentials list. If null, all valid     credentials will be returned. |

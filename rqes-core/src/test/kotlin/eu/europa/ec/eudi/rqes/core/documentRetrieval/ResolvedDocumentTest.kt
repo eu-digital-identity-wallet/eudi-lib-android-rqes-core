@@ -21,75 +21,81 @@ import eu.europa.ec.eudi.documentretrieval.DocumentLocation
 import eu.europa.ec.eudi.rqes.core.UnsignedDocument
 import io.mockk.mockk
 import org.junit.Test
-import java.io.File
+import kotlin.io.path.createTempFile
 import kotlin.test.assertEquals
 
 class ResolvedDocumentTest {
 
     @Test
     fun convertResolvedDocumentToUnsignedDocument() {
+        val file = createTempFile().toFile()
         val resolvedDocument = ResolvedDocument(
             location = mockk<DocumentLocation>(),
             digest = mockk<DocumentDigest>(),
-            file = File("testFile")
+            file = file
         )
         val unsignedDocument = resolvedDocument.toUnsignedDocument("Test Document")
 
         assertEquals("Test Document", unsignedDocument.label)
-        assertEquals(File("testFile"), unsignedDocument.file)
+        assertEquals(file, unsignedDocument.file)
         assertEquals(UnsignedDocument.Config.DEFAULT, unsignedDocument.signingConfig)
     }
 
     @Test
     fun convertResolvedDocumentToUnsignedDocumentWithCustomConfig() {
+        val file = createTempFile().toFile()
         val resolvedDocument = ResolvedDocument(
             location = mockk<DocumentLocation>(),
             digest = mockk<DocumentDigest>(),
-            file = File("testFile")
+            file = file
         )
         val customConfig = UnsignedDocument.Config.DEFAULT
         val unsignedDocument = resolvedDocument.toUnsignedDocument("Test Document", customConfig)
 
         assertEquals("Test Document", unsignedDocument.label)
-        assertEquals(File("testFile"), unsignedDocument.file)
+        assertEquals(file, unsignedDocument.file)
         assertEquals(customConfig, unsignedDocument.signingConfig)
     }
 
     @Test
     fun convertListOfResolvedDocumentsToUnsignedDocuments() {
+        val file1 = createTempFile().toFile()
+        val file2 = createTempFile().toFile()
         val resolvedDocuments = listOf(
             ResolvedDocument(
                 location = mockk<DocumentLocation>(),
                 digest = mockk<DocumentDigest>(),
-                file = File("testFile1")
+                file = file1
             ),
             ResolvedDocument(
                 location = mockk<DocumentLocation>(),
                 digest = mockk<DocumentDigest>(),
-                file = File("testFile2")
+                file = file2
             )
         )
         val unsignedDocuments = resolvedDocuments.toUnsignedDocuments()
 
         assertEquals(2, unsignedDocuments.size)
         assertEquals("Document 0", unsignedDocuments[0].label)
-        assertEquals(File("testFile1"), unsignedDocuments[0].file)
+        assertEquals(file1, unsignedDocuments[0].file)
         assertEquals("Document 1", unsignedDocuments[1].label)
-        assertEquals(File("testFile2"), unsignedDocuments[1].file)
+        assertEquals(file2, unsignedDocuments[1].file)
     }
 
     @Test
     fun convertListOfResolvedDocumentsToUnsignedDocumentsWithCustomConfig() {
+        val file1 = createTempFile().toFile()
+        val file2 = createTempFile().toFile()
         val resolvedDocuments = listOf(
             ResolvedDocument(
                 location = mockk<DocumentLocation>(),
                 digest = mockk<DocumentDigest>(),
-                file = File("testFile1")
+                file = file1
             ),
             ResolvedDocument(
                 location = mockk<DocumentLocation>(),
                 digest = mockk<DocumentDigest>(),
-                file = File("testFile2")
+                file = file2
             )
         )
         val customConfig = UnsignedDocument.Config.DEFAULT
@@ -97,10 +103,10 @@ class ResolvedDocumentTest {
 
         assertEquals(2, unsignedDocuments.size)
         assertEquals("Document 0", unsignedDocuments[0].label)
-        assertEquals(File("testFile1"), unsignedDocuments[0].file)
+        assertEquals(file1, unsignedDocuments[0].file)
         assertEquals(customConfig, unsignedDocuments[0].signingConfig)
         assertEquals("Document 1", unsignedDocuments[1].label)
-        assertEquals(File("testFile2"), unsignedDocuments[1].file)
+        assertEquals(file2, unsignedDocuments[1].file)
         assertEquals(customConfig, unsignedDocuments[1].signingConfig)
     }
 }

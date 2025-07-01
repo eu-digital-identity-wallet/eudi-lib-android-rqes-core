@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 European Commission
+ * Copyright (c) 2024-2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import eu.europa.ec.eudi.rqes.CredentialRef
 import eu.europa.ec.eudi.rqes.DocumentDigestList
 import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.HttpsUrl
-import eu.europa.ec.eudi.rqes.HttpsUrl.Companion.invoke
 import eu.europa.ec.eudi.rqes.ServiceAccessAuthorized
 import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import eu.europa.ec.eudi.rqes.core.RQESServiceImpl.AuthorizedImpl
@@ -39,6 +38,8 @@ import io.mockk.unmockkAll
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertThrows
 import java.io.File
+import kotlin.io.path.absolutePathString
+import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -53,12 +54,15 @@ class AuthorizedImplTest {
     lateinit var authorizedService: AuthorizedImpl
     val serviceAccessAuthorized: ServiceAccessAuthorized = mockk(relaxed = true)
 
+    val outputPathDir = createTempDirectory().absolutePathString()
+
     @BeforeTest
     fun setUp() {
         authorizedService = AuthorizedImpl(
             serverState = serverState,
             client = mockClient,
             serviceAccessAuthorized = serviceAccessAuthorized,
+            outputPathDir = outputPathDir,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
         )
     }
@@ -107,7 +111,7 @@ class AuthorizedImplTest {
             )
             val signingAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256
             val documents = UnsignedDocuments(listOf(document))
-            val documentsList = documents.asDocumentToSignList(signingAlgorithmOID)
+            val documentsList = documents.asDocumentToSignList(outputPathDir)
             val credentialInfo = mockk<CredentialInfo>(relaxed = true) {
                 every { credentialID } returns CredentialID("credential-id")
                 every { certificate } returns mockk()
@@ -219,11 +223,10 @@ class AuthorizedImplTest {
                     AuthorizedImplTest::class.simpleName!!, ".pdf"
                 )
             )
-            val usedSigningAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA512
             val supportedSigningAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256
 
             val documents = UnsignedDocuments(listOf(document))
-            val documentsList = documents.asDocumentToSignList(usedSigningAlgorithmOID)
+            val documentsList = documents.asDocumentToSignList(outputPathDir)
             val credentialInfo = mockk<CredentialInfo>(relaxed = true) {
                 every { credentialID } returns CredentialID("credential-id")
                 every { certificate } returns mockk()
@@ -266,7 +269,6 @@ class AuthorizedImplTest {
             val result = authorizedService.getCredentialAuthorizationUrl(
                 credentialInfo,
                 documents,
-                usedSigningAlgorithmOID
             )
             assertTrue(result.isSuccess)
             assertEquals(mockAuthorizationCodeURL, result.getOrThrow())
@@ -277,6 +279,6 @@ class AuthorizedImplTest {
                 credentialAuthorizationRequestPrepared,
                 authorizedService.credAuthRequestPrepared
             )
-            assertEquals(usedSigningAlgorithmOID, authorizedService.signingAlgorithmOID)
+            assertEquals(supportedSigningAlgorithmOID, authorizedService.signingAlgorithmOID)
         }
 }

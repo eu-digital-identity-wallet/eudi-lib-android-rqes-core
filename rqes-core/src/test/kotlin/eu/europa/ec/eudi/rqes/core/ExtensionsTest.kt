@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 European Commission
+ * Copyright (c) 2024-2025 European Commission
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,9 +30,12 @@ import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import eu.europa.ec.eudi.rqes.core.RQESServiceImpl.AuthorizedImpl
 import io.mockk.coEvery
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
+import io.mockk.runs
 import io.mockk.unmockkAll
 import kotlinx.coroutines.test.runTest
+import java.io.File
 import java.io.InputStream
 import java.time.Instant
 import kotlin.test.AfterTest
@@ -45,12 +48,15 @@ class ExtensionsTest {
     lateinit var authorizedService: AuthorizedImpl
     val serviceAccessAuthorized: ServiceAccessAuthorized = mockk(relaxed = true)
 
+    val outputPathDir = "/tmp"
+
     @BeforeTest
     fun setUp() {
         authorizedService = AuthorizedImpl(
             serverState = serverState,
             client = mockClient,
             serviceAccessAuthorized = serviceAccessAuthorized,
+            outputPathDir = outputPathDir,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
         )
     }
@@ -63,7 +69,10 @@ class ExtensionsTest {
     @Test
     fun `test Authorized signDocuments extension`() = runTest {
         val authorizationCode = AuthorizationCode(code = "let me in")
-        authorizedService.documentsToSign = listOf<DocumentToSign>(mockk())
+        authorizedService.documentsToSign = listOf(mockk{
+            every { label } returns "test document"
+            every { documentOutputPath } returns outputPathDir + File.separator + "document.pdf"
+        })
         authorizedService.documentDigestList = mockk<DocumentDigestList> {
             every { hashAlgorithmOID } returns HashAlgorithmOID.SHA_256
             every { hashCalculationTime } returns Instant.now()
@@ -72,7 +81,6 @@ class ExtensionsTest {
             every { signatures } returns listOf<Signature>(mockk())
         }
         authorizedService.signingAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256
-        val signedDocumentsInputStreams = listOf<InputStream>(mockk())
         val credentialAuthorized = mockk<CredentialAuthorized.SCAL2> {
             every { credentialCertificate } returns mockk()
             coEvery {
@@ -97,16 +105,9 @@ class ExtensionsTest {
 
         coEvery {
             with(mockClient) {
-                getSignedDocuments(
-                    documents = authorizedService.documentsToSign,
-                    signatures = signatureList.signatures,
-                    credentialCertificate = credentialAuthorized.credentialCertificate,
-//                        hashAlgorithmOID = documentDigestList.hashAlgorithmOID,
-                    hashAlgorithmOID = any(), // TODO: Fix this
-                    signatureTimestamp = authorizedService.documentDigestList.hashCalculationTime
-                )
+                createSignedDocuments(signatureList.signatures)
             }
-        } returns signedDocumentsInputStreams
+        } just runs
 
         val result = authorizedService.signDocuments(authorizationCode)
         assert(result.isSuccess)
