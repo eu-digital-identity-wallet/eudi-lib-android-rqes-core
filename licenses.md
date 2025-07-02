@@ -1,7 +1,7 @@
 
 # EUDI RQES Core library for Android
 ## Dependency License Report
-_2025-07-01 15:28:29 EEST_
+_2025-07-02 11:24:19 EEST_
 ## Apache License, Version 2.0
 
 **1** **Group:** `io.ktor` **Name:** `ktor-client-android` **Version:** `3.2.0` 

@@ -23,6 +23,7 @@ import eu.europa.ec.eudi.rqes.CredentialsListRequest
 import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.HttpsUrl
 import eu.europa.ec.eudi.rqes.RSSPMetadata
+import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import io.ktor.client.HttpClient
 import java.io.File
 
@@ -106,12 +107,14 @@ interface RQESService {
          *
          * @param credential The credential to be used for signing.
          * @param documents The collection of unsigned documents to be signed.
+         * @param signingAlgorithmOID Optional algorithm OID for signing the documents. If null, the first supported algorithm of the credential should be used.
          * @return A [Result] containing an [HttpsUrl] for credential authorization if successful,
          *         or an error if the operation failed.
          */
         suspend fun getCredentialAuthorizationUrl(
             credential: CredentialInfo,
-            documents: UnsignedDocuments
+            documents: UnsignedDocuments,
+            signingAlgorithmOID: SigningAlgorithmOID? = null
         ): Result<HttpsUrl>
 
         /**

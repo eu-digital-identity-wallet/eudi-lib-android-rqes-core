@@ -3,7 +3,7 @@
 # getCredentialAuthorizationUrl
 
 [androidJvm]\
-abstract suspend fun [getCredentialAuthorizationUrl](get-credential-authorization-url.md)(credential: CredentialInfo, documents: [UnsignedDocuments](../../-unsigned-documents/index.md)): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html)&lt;HttpsUrl&gt;
+abstract suspend fun [getCredentialAuthorizationUrl](get-credential-authorization-url.md)(credential: CredentialInfo, documents: [UnsignedDocuments](../../-unsigned-documents/index.md), signingAlgorithmOID: SigningAlgorithmOID? = null): [Result](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-result/index.html)&lt;HttpsUrl&gt;
 
 Retrieves the credential authorization URL for document signing.
 
@@ -21,3 +21,4 @@ androidJvm
 |---|---|
 | credential | The credential to be used for signing. |
 | documents | The collection of unsigned documents to be signed. |
+| signingAlgorithmOID | Optional algorithm OID for signing the documents. If null, the first supported algorithm of the credential should be used. |

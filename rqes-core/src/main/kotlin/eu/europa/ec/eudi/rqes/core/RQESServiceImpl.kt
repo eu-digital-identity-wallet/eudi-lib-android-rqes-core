@@ -125,11 +125,7 @@ class RQESServiceImpl(
      *         or an error if the retrieval failed
      */
     override suspend fun getRSSPMetadata(): Result<RSSPMetadata> {
-        return try {
-            Result.success(getOrCreateClient().rsspMetadata)
-        } catch (e: Throwable) {
-            Result.failure(e)
-        }
+        return runCatching { getOrCreateClient().rsspMetadata }
     }
 
     /**
@@ -151,17 +147,15 @@ class RQESServiceImpl(
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun getServiceAuthorizationUrl(): Result<HttpsUrl> {
         serverState = Uuid.random().toString()
-        return try {
+        return runCatching {
             with(getOrCreateClient()) {
-                val authorizationCodeURL =
-                    prepareServiceAuthorizationRequest(walletState = serverState)
-                        .getOrThrow()
-                        .also { serviceAuthRequestPrepared = it }
-                        .value.authorizationCodeURL
-                Result.success(authorizationCodeURL)
+                val authorizationCodeURL = prepareServiceAuthorizationRequest(serverState)
+                    .getOrThrow()
+                    .also { serviceAuthRequestPrepared = it }
+                    .value.authorizationCodeURL
+                // returns
+                authorizationCodeURL
             }
-        } catch (e: Throwable) {
-            Result.failure(e)
         }
     }
 
@@ -183,29 +177,29 @@ class RQESServiceImpl(
      * @throws IllegalStateException If [getServiceAuthorizationUrl] was not called before this method
      */
     override suspend fun authorizeService(authorizationCode: AuthorizationCode): Result<RQESService.Authorized> {
-        return try {
+        return runCatching {
             check(::serverState.isInitialized) {
                 "Server state not initialized. Call getServiceAuthorizationUrl() first"
             }
-            serviceAuthRequestPrepared?.let { prepared ->
-                with(getOrCreateClient()) {
-                    val authorized =
-                        prepared.authorizeWithAuthorizationCode(authorizationCode, serverState)
-                            .getOrThrow()
-                    Result.success(
-                        AuthorizedImpl(
-                            serverState = serverState,
-                            client = this@with,
-                            serviceAccessAuthorized = authorized,
-                            outputPathDir = outputPathDir,
-                            hashAlgorithm = this@RQESServiceImpl.hashAlgorithm,
-                        )
-                    )
-                }
+            val prepared = serviceAuthRequestPrepared
+            checkNotNull(prepared) {
+                "Service authorization request not prepared. Call getServiceAuthorizationUrl() first"
             }
-                ?: throw IllegalStateException("Service authorization request not prepared. Call getServiceAuthorizationUrl() first")
-        } catch (e: Throwable) {
-            Result.failure(e)
+            with(getOrCreateClient()) {
+                val authorized = prepared.authorizeWithAuthorizationCode(
+                    authorizationCode = authorizationCode,
+                    serverState = serverState
+                ).getOrThrow()
+
+                // returns
+                AuthorizedImpl(
+                    serverState = serverState,
+                    client = this@with,
+                    serviceAccessAuthorized = authorized,
+                    outputPathDir = outputPathDir,
+                    hashAlgorithm = this@RQESServiceImpl.hashAlgorithm,
+                )
+            }
         }
     }
 
@@ -262,16 +256,13 @@ class RQESServiceImpl(
          *         or an error if the retrieval failed
          */
         override suspend fun listCredentials(request: CredentialsListRequest?): Result<List<CredentialInfo>> {
-            return try {
+            return runCatching {
                 with(client) {
-                    val credentials = serviceAccessAuthorized.listCredentials(
+                    // returns
+                    serviceAccessAuthorized.listCredentials(
                         request ?: CredentialsListRequest(onlyValid = true)
                     ).getOrThrow()
-
-                    Result.success(credentials)
                 }
-            } catch (e: Throwable) {
-                Result.failure(e)
             }
         }
 
@@ -293,15 +284,21 @@ class RQESServiceImpl(
          *
          * @param credential The credential to be used for signing the documents
          * @param documents The collection of unsigned documents to be signed
+         * @param signingAlgorithmOID Optional algorithm OID for signing the documents. If null, the first supported algorithm of the credential will be used.
          * @return A [Result] containing the [HttpsUrl] for credential authorization if successful,
          *         or an error if preparation failed
          */
         override suspend fun getCredentialAuthorizationUrl(
             credential: CredentialInfo,
             documents: UnsignedDocuments,
+            signingAlgorithmOID: SigningAlgorithmOID?
         ): Result<HttpsUrl> {
-            return try {
-                signingAlgorithmOID = credential.key.supportedAlgorithms.first()
+            return runCatching {
+                this.signingAlgorithmOID =
+                    signingAlgorithmOID ?: credential.key.supportedAlgorithms.first()
+                require(this.signingAlgorithmOID in credential.key.supportedAlgorithms) {
+                    "Signing algorithm not supported by credential"
+                }
                 with(client) {
                     this@AuthorizedImpl.documentsToSign =
                         documents.asDocumentToSignList(outputPathDir)
@@ -321,11 +318,9 @@ class RQESServiceImpl(
                         .also { credAuthRequestPrepared = it }
                         .authorizationRequestPrepared
                         .authorizationCodeURL
-
-                    Result.success(authorizationCodeURL)
+                    // returns
+                    authorizationCodeURL
                 }
-            } catch (e: Throwable) {
-                Result.failure(e)
             }
         }
 
@@ -350,37 +345,38 @@ class RQESServiceImpl(
          *         or if required state is missing
          */
         override suspend fun authorizeCredential(authorizationCode: AuthorizationCode): Result<RQESService.CredentialAuthorized> {
-            return try {
-                checkAll(
-                    ::credAuthRequestPrepared.isInitialized,
-                    ::documentsToSign.isInitialized,
-                ) {
-                    "Credential authorization failed. Call getCredentialAuthorizationUrl() first"
+            return runCatching {
+                check(::credAuthRequestPrepared.isInitialized) {
+                    "Server state not initialized. Call getServiceAuthorizationUrl() first"
+                }
+                check(::documentsToSign.isInitialized) {
+                    "Documents not initialized. Call getCredentialAuthorizationUrl() first"
+                }
+                check(::documentDigestList.isInitialized) {
+                    "Document hashes not initialized. Call getCredentialAuthorizationUrl() first"
+                }
+                val signingAlgorithmOID = signingAlgorithmOID
+                checkNotNull(signingAlgorithmOID) {
+                    "Signing algorithm not initialized. Call getCredentialAuthorizationUrl() first"
                 }
                 with(client) {
                     val authorized = credAuthRequestPrepared
                         .authorizeWithAuthorizationCode(authorizationCode, serverState)
                         .getOrThrow()
-                    signingAlgorithmOID
-                        ?.let { signAlgorithm ->
-                            Result.success(
-                                CredentialAuthorizedImpl(
-                                    client = this@with,
-                                    documentsToSign = documentsToSign,
-                                    documentDigestList = documentDigestList,
-                                    credentialAuthorized = authorized,
-                                    signingAlgorithm = signAlgorithm
-                                )
-                            )
-                        }
-                        ?: throw IllegalStateException("Signing algorithm not initialized. Call getCredentialAuthorizationUrl() first")
-                }
 
-            } catch (e: Throwable) {
-                Result.failure(e)
+                    // returns
+                    CredentialAuthorizedImpl(
+                        client = this@with,
+                        documentsToSign = documentsToSign,
+                        documentDigestList = documentDigestList,
+                        credentialAuthorized = authorized,
+                        signingAlgorithm = signingAlgorithmOID
+                    )
+                }
             }
         }
     }
+
 
     /**
      * Implementation of the [RQESService.CredentialAuthorized] interface that performs
@@ -426,7 +422,7 @@ class RQESServiceImpl(
          *         or an error if the signing operation failed
          */
         override suspend fun signDocuments(): Result<SignedDocuments> {
-            return try {
+            return runCatching {
                 with(client) {
                     val signatureList = when (credentialAuthorized) {
                         is CredentialAuthorized.SCAL1 -> credentialAuthorized
@@ -443,28 +439,14 @@ class RQESServiceImpl(
                     }.getOrThrow()
 
                     createSignedDocuments(signatures = signatureList.signatures)
-                    val signedDocuments = documentsToSign.associate {
+                    // returns
+                    documentsToSign.associate {
                         it.label to File(it.documentOutputPath)
                     }.let { SignedDocuments(it) }
-                    Result.success(signedDocuments)
                 }
-            } catch (e: Throwable) {
-                Result.failure(e)
             }
         }
     }
 
-    companion object {
-        /**
-         * Check all conditions.
-         * This method is used to check all conditions.
-         * @param conditions The conditions to check.
-         * @param lazyMessage The lazy message.
-         * @throws IllegalStateException If the conditions are not met.
-         * @see check
-         */
-        internal inline fun checkAll(vararg conditions: Boolean, lazyMessage: () -> String) {
-            check(conditions.all { it }) { lazyMessage() }
-        }
-    }
+    companion object
 }
