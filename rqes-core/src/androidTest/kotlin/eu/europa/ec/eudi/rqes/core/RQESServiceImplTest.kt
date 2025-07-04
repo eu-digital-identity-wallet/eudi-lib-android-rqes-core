@@ -38,7 +38,6 @@ class RQESServiceImplTest {
                 clientSecret = "client-secret"
             ),
             authFlowRedirectionURI = URI("rqes:redirection"),
-            scaBaseURL = URL("https://example.com"),
         )
         val rqesService = RQESService(
             serviceEndpointUrl = "https://example.com/csc/v2",

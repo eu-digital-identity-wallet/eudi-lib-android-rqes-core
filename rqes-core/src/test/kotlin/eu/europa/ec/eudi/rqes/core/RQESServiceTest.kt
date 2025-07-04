@@ -39,7 +39,6 @@ class RQESServiceTest {
                 clientSecret = "client-secret"
             ),
             authFlowRedirectionURI = URI("rqes:redirection"),
-            scaBaseURL = URL("https://example.com"),
         )
         val mockkHttpClientFactory: () -> HttpClient = mockk()
         val rqesService = RQESService(
@@ -67,7 +66,6 @@ class RQESServiceTest {
                 clientSecret = "client-secret"
             ),
             authFlowRedirectionURI = URI("rqes:redirection"),
-            scaBaseURL = URL("https://example.com"),
         )
         val rqesService = RQESService(
             serviceEndpointUrl = "https://example.com/csc/v2",
@@ -92,7 +90,6 @@ class RQESServiceTest {
                 clientSecret = "client-secret"
             ),
             authFlowRedirectionURI = URI("rqes:redirection"),
-            scaBaseURL = URL("https://example.com"),
         )
         val rqesService = RQESService(
             serviceEndpointUrl = "https://example.com/csc/v2",
