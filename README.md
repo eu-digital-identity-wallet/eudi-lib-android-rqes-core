@@ -78,7 +78,6 @@ val rqesService = RQESService(
             clientSecret = "client-secret"
         ),
         authFlowRedirectionURI = URI("rqes:redirect"),
-        scaBaseURL = URL("https://example.com"),
     ),
     outputPathDir = "/path/to/output/dir",
     // set the hashing algorithm that will be used

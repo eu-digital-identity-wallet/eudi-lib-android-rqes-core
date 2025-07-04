@@ -58,7 +58,6 @@ class RQESServiceImplTest {
             config = CSCClientConfig(
                 client = OAuth2Client.Public("client-id"),
                 authFlowRedirectionURI = URI("rqes:redirect"),
-                scaBaseURL = URL("https://example.com/sca"),
             ),
             outputPathDir = outputPathDir,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
