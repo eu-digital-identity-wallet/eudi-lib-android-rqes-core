@@ -34,4 +34,4 @@ androidJvm
 
 | | |
 |---|---|
-| [IllegalStateException](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-illegal-state-exception/index.html) | If [getServiceAuthorizationUrl](get-service-authorization-url.md) was not called before this method |
+| [IllegalStateException](https://developer.android.com/reference/kotlin/java/lang/IllegalStateException.html) | If [getServiceAuthorizationUrl](get-service-authorization-url.md) was not called before this method |

@@ -29,4 +29,4 @@ androidJvm
 
 | | |
 |---|---|
-| [IllegalArgumentException](https://kotlinlang.org/api/latest/jvm/stdlib/kotlin-stdlib/kotlin/-illegal-argument-exception/index.html) | If [outputPathDir](invoke.md) does not point to a valid directory. |
+| [IllegalArgumentException](https://developer.android.com/reference/kotlin/java/lang/IllegalArgumentException.html) | If [outputPathDir](invoke.md) does not point to a valid directory. |
