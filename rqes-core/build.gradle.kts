@@ -110,7 +110,6 @@ dependencies {
 //    implementation(libs.appcompat)
     api(libs.eudi.rqes.jvm)
     implementation(libs.kotlinx.io.core)
-    implementation(libs.kotlinx.datetime)
 
     // Ktor Android Engine
     runtimeOnly(libs.ktor.client.android)
