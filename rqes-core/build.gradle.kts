@@ -19,6 +19,8 @@ import com.github.jk1.license.filter.LicenseBundleNormalizer
 import com.github.jk1.license.filter.ReduceDuplicateLicensesFilter
 import com.github.jk1.license.render.InventoryMarkdownReportRenderer
 import com.vanniktech.maven.publish.AndroidMultiVariantLibrary
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.SourcesJar
 import java.util.Locale
 
 plugins {
@@ -102,7 +104,8 @@ android {
 
     androidComponents {
         onVariants {
-            createJacocoTasks(it.name) }
+            createJacocoTasks(it.name)
+        }
     }
 }
 
@@ -143,30 +146,6 @@ dependencyCheck {
     nvd.maxRetryCount = 2
 }
 
-// Dokka generation
-
-tasks.dokkaGfm.configure {
-    val outputDir = file("$rootDir/docs")
-    doFirst { delete(outputDir) }
-    outputDirectory.set(outputDir)
-}
-
-tasks.register<Jar>("dokkaHtmlJar") {
-    group = "documentation"
-    description = "Assembles HTML documentation with Dokka."
-    dependsOn(tasks.dokkaHtml)
-    from(tasks.dokkaHtml.flatMap { it.outputDirectory })
-    archiveClassifier.set("html-docs")
-}
-
-tasks.register<Jar>("dokkaJavadocJar") {
-    group = "documentation"
-    description = "Assembles a jar archive containing the Javadoc documentation."
-    dependsOn(tasks.dokkaJavadoc)
-    from(tasks.dokkaJavadoc.flatMap { it.outputDirectory })
-    archiveClassifier.set("javadoc")
-}
-
 // Third-party licenses report
 
 licenseReport {
@@ -191,14 +170,8 @@ tasks.generateLicenseReport.configure {
     }
 }
 
-// Build documentation and license report
-tasks.register<Task>("buildDocumentation") {
-    group = "documentation"
-    description = "Builds the documentation and license report."
-    dependsOn("dokkaGfm", "generateLicenseReport")
-}
 tasks.assemble.configure {
-    finalizedBy("buildDocumentation")
+    finalizedBy("generateLicenseReport")
 }
 
 // Publish
@@ -206,9 +179,9 @@ tasks.assemble.configure {
 mavenPublishing {
     configure(
         AndroidMultiVariantLibrary(
-            sourcesJar = true,
-            publishJavadocJar = true,
-            setOf("release")
+            javadocJar = JavadocJar.Dokka("dokkaGeneratePublicationHtml"),
+            sourcesJar = SourcesJar.Sources(),
+            includedBuildTypeValues = setOf("release")
         )
     )
     pom {
@@ -216,13 +189,6 @@ mavenPublishing {
             system = "github"
             url = "${POM_SCM_URL}/actions"
         }
-    }
-}
-// handle java.lang.UnsupportedOperationException: PermittedSubclasses requires ASM9
-// when publishing module
-afterEvaluate {
-    tasks.named("javaDocReleaseGeneration").configure {
-        enabled = false
     }
 }
 

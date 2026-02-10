@@ -21,7 +21,6 @@ import eu.europa.ec.eudi.rqes.CSCClient
 import eu.europa.ec.eudi.rqes.CredentialAuthorizationRequestPrepared
 import eu.europa.ec.eudi.rqes.CredentialAuthorized
 import eu.europa.ec.eudi.rqes.DocumentDigestList
-import eu.europa.ec.eudi.rqes.DocumentToSign
 import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.ServiceAccessAuthorized
 import eu.europa.ec.eudi.rqes.Signature
@@ -36,7 +35,6 @@ import io.mockk.runs
 import io.mockk.unmockkAll
 import kotlinx.coroutines.test.runTest
 import java.io.File
-import java.io.InputStream
 import java.time.Instant
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest

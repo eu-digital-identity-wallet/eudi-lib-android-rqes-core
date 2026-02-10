@@ -16,7 +16,6 @@
 
 package eu.europa.ec.eudi.rqes.core.documentRetrieval
 
-import eu.europa.ec.eudi.documentretrieval.Consensus
 import eu.europa.ec.eudi.documentretrieval.DispatchOutcome
 import eu.europa.ec.eudi.documentretrieval.DocumentRetrieval
 import eu.europa.ec.eudi.documentretrieval.ResolvedRequestObject
@@ -50,19 +49,11 @@ class ResolutionOutcomeImplTest {
                 },
             )
         )
-        val consensus = Consensus.Positive(
-            documentWithSignature = listOf(
-                "signed document 1",
-                "signed document 2"
-            ),
-            signatureObject = null
-        )
 
         val redirectUri = mockk<URI>()
         val dispatchOutcome = DispatchOutcome.Accepted(redirectURI = redirectUri)
 
-
-        coEvery { client.dispatch(requestObject, consensus) } returns dispatchOutcome
+        coEvery { client.dispatch(any(), any()) } returns dispatchOutcome
 
         val result = resolutionOutcome.dispatch(signedDocuments)
 

@@ -22,7 +22,6 @@ import eu.europa.ec.eudi.rqes.OAuth2Client
 import io.ktor.client.HttpClient
 import io.mockk.mockk
 import java.net.URI
-import java.net.URL
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
