@@ -50,7 +50,7 @@ class ResolutionOutcomeImpl(
     override suspend fun dispatch(signedDocuments: SignedDocuments): DispatchOutcome {
         val documentWithSignature =
             signedDocuments.map { (_, file) ->
-                file.readBytes().decodeToString()
+                file.readBytes()
             }
 
         return client.dispatch(
