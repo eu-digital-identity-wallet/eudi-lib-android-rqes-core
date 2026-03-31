@@ -311,6 +311,7 @@ class RQESServiceImpl(
                         credentialAuthorizationSubject = CredentialAuthorizationSubject(
                             credentialRef = CredentialRef.ByCredentialID(credential.credentialID),
                             documentDigestList = documentDigestList,
+                            numSignatures = documentsToSign.size
                         ),
                         walletState = serverState
                     )

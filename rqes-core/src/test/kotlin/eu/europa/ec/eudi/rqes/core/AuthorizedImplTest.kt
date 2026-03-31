@@ -141,6 +141,7 @@ class AuthorizedImplTest {
             val credentialAuthorizationSubject = CredentialAuthorizationSubject(
                 credentialRef = CredentialRef.ByCredentialID(credentialInfo.credentialID),
                 documentDigestList = documentDigestList,
+                numSignatures = documents.size,
             )
             coEvery {
                 with(mockClient) {
@@ -268,6 +269,7 @@ class AuthorizedImplTest {
             val credentialAuthorizationSubject = CredentialAuthorizationSubject(
                 credentialRef = CredentialRef.ByCredentialID(credentialInfo.credentialID),
                 documentDigestList = documentDigestList,
+                numSignatures = documents.size,
             )
             coEvery {
                 with(mockClient) {
@@ -334,6 +336,7 @@ class AuthorizedImplTest {
             val credentialAuthorizationSubject = CredentialAuthorizationSubject(
                 credentialRef = CredentialRef.ByCredentialID(credentialInfo.credentialID),
                 documentDigestList = documentDigestList,
+                numSignatures = documents.size,
             )
             coEvery {
                 with(mockClient) {
