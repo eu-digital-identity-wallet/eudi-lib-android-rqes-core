@@ -21,11 +21,11 @@ import com.github.jk1.license.render.InventoryMarkdownReportRenderer
 import com.vanniktech.maven.publish.AndroidMultiVariantLibrary
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.SourcesJar
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Locale
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.dokka)
     alias(libs.plugins.dependency.license.report)
     alias(libs.plugins.dependencycheck)
@@ -77,9 +77,6 @@ android {
         sourceCompatibility = JavaVersion.toVersion(libs.versions.java.get())
         targetCompatibility = JavaVersion.toVersion(libs.versions.java.get())
     }
-    kotlinOptions {
-        jvmTarget = libs.versions.java.get()
-    }
 
     testOptions {
         unitTests.isReturnDefaultValues = true
@@ -109,6 +106,12 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(libs.versions.java.get()))
+    }
+}
+
 dependencies {
 //    implementation(libs.appcompat)
     api(libs.eudi.rqes.jvm)
@@ -118,6 +121,7 @@ dependencies {
     runtimeOnly(libs.ktor.client.android)
 
     testImplementation(kotlin("test"))
+    testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.bouncy.castle.pkix)
     testImplementation(libs.bouncy.castle.prov)
     testImplementation(libs.mockk)

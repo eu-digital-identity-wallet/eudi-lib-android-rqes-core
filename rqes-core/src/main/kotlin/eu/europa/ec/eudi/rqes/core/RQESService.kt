@@ -204,6 +204,7 @@ interface RQESService {
          * in [Authorized.getCredentialAuthorizationUrl] and the resolved algorithm must be supported
          * by the credential used for signing.
          * @param httpClientFactory Optional custom HTTP client factory for network requests.
+         * @param signingLogger Optional observer notified when a signing operation finishes.
          * @return A configured [RQESService] implementation.
          * @throws IllegalArgumentException If [outputPathDir] does not point to a valid directory.
          */
@@ -214,6 +215,7 @@ interface RQESService {
             hashAlgorithm: HashAlgorithmOID = HashAlgorithmOID.SHA_256,
             signingAlgorithm: SigningAlgorithm = SigningAlgorithm.FirstSupportedByCredential,
             httpClientFactory: (() -> HttpClient)? = null,
+            signingLogger: RqesSigningLogger? = null
         ): RQESService {
             require(File(outputPathDir).isDirectory) {
                 "Output path must be a directory"
@@ -224,7 +226,8 @@ interface RQESService {
                 outputPathDir,
                 hashAlgorithm,
                 signingAlgorithm,
-                httpClientFactory
+                httpClientFactory,
+                signingLogger
             )
         }
     }
