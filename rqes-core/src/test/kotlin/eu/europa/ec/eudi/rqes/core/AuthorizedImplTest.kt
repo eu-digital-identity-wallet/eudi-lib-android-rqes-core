@@ -64,6 +64,7 @@ class AuthorizedImplTest {
             serviceAccessAuthorized = serviceAccessAuthorized,
             outputPathDir = outputPathDir,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
+            defaultSigningAlgorithm = SigningAlgorithmOID.ECDSA_SHA256,
         )
     }
 
@@ -216,7 +217,7 @@ class AuthorizedImplTest {
     }
 
     @Test
-    fun `getCredentialAuthorizationUrl with null signingAlgorithmOID uses the first supported algorithm`() =
+    fun `getCredentialAuthorizationUrl with null signingAlgorithmOID uses the service default signing algorithm`() =
         runTest {
 
             assertThrows(UninitializedPropertyAccessException::class.java) {

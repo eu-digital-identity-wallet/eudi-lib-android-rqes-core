@@ -25,6 +25,7 @@ import eu.europa.ec.eudi.rqes.HttpsUrl
 import eu.europa.ec.eudi.rqes.OAuth2Client
 import eu.europa.ec.eudi.rqes.ServiceAccessAuthorized
 import eu.europa.ec.eudi.rqes.ServiceAuthorizationRequestPrepared
+import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -60,6 +61,7 @@ class RQESServiceImplTest {
             ),
             outputPathDir = outputPathDir,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
+            signingAlgorithm = SigningAlgorithmOID.ECDSA_SHA256,
         )
 
         mockkObject(CSCClient.Companion)

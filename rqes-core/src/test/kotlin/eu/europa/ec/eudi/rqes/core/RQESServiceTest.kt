@@ -19,6 +19,7 @@ package eu.europa.ec.eudi.rqes.core
 import eu.europa.ec.eudi.rqes.CSCClientConfig
 import eu.europa.ec.eudi.rqes.HashAlgorithmOID
 import eu.europa.ec.eudi.rqes.OAuth2Client
+import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import io.ktor.client.HttpClient
 import io.mockk.mockk
 import java.net.URI
@@ -53,6 +54,7 @@ class RQESServiceTest {
         assertEquals(config, rqesService.config)
         assertEquals("/tmp", rqesService.outputPathDir)
         assertEquals(HashAlgorithmOID.SHA_256, rqesService.hashAlgorithm)
+        assertEquals(SigningAlgorithmOID.ECDSA_SHA256, rqesService.signingAlgorithm)
         assertEquals(mockkHttpClientFactory, rqesService.clientFactory)
     }
 

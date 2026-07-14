@@ -54,6 +54,7 @@ import kotlin.uuid.Uuid
  * @param config The RQES service configuration.
  * @param outputPathDir Directory where signed documents will be stored.
  * @param hashAlgorithm The algorithm OID, for hashing the documents.
+ * @param signingAlgorithm The signing algorithm OID that will be used as default for signing. If not supported by the selected credential then an error is thrown.
  * @param clientFactory The HTTP client factory. If this property is null, the default HTTP client factory will be used.
  */
 class RQESServiceImpl(
@@ -61,6 +62,7 @@ class RQESServiceImpl(
     @VisibleForTesting internal val config: CSCClientConfig,
     @VisibleForTesting internal val outputPathDir: String,
     override val hashAlgorithm: HashAlgorithmOID,
+    override val signingAlgorithm: SigningAlgorithmOID,
     @VisibleForTesting internal val clientFactory: (() -> HttpClient)? = null
 ) : RQESService {
 
@@ -198,6 +200,7 @@ class RQESServiceImpl(
                     serviceAccessAuthorized = authorized,
                     outputPathDir = outputPathDir,
                     hashAlgorithm = this@RQESServiceImpl.hashAlgorithm,
+                    defaultSigningAlgorithm = signingAlgorithm
                 )
             }
         }
@@ -217,6 +220,7 @@ class RQESServiceImpl(
      * @property serviceAccessAuthorized The authorized service access credentials from OAuth2 flow.
      * @property outputPathDir Directory where signed documents will be stored.
      * @property hashAlgorithm The algorithm used for creating document hashes.
+     * @property defaultSigningAlgorithm The signing algorithm to use if not provided through getCredentialAuthorizationUrl method.
      */
     class AuthorizedImpl(
         @VisibleForTesting internal val serverState: String,
@@ -224,6 +228,7 @@ class RQESServiceImpl(
         @VisibleForTesting internal val serviceAccessAuthorized: ServiceAccessAuthorized,
         @VisibleForTesting internal val outputPathDir: String,
         val hashAlgorithm: HashAlgorithmOID,
+        val defaultSigningAlgorithm: SigningAlgorithmOID
     ) : RQESService.Authorized {
 
         @VisibleForTesting
@@ -284,7 +289,7 @@ class RQESServiceImpl(
          *
          * @param credential The credential to be used for signing the documents
          * @param documents The collection of unsigned documents to be signed
-         * @param signingAlgorithmOID Optional algorithm OID for signing the documents. If null, the first supported algorithm of the credential will be used.
+         * @param signingAlgorithmOID Optional algorithm OID for signing the documents. If null, the service's default signing algorithm is used. In either case the selected algorithm must be supported by the credential, otherwise an error is returned.
          * @return A [Result] containing the [HttpsUrl] for credential authorization if successful,
          *         or an error if preparation failed
          */
@@ -294,8 +299,7 @@ class RQESServiceImpl(
             signingAlgorithmOID: SigningAlgorithmOID?
         ): Result<HttpsUrl> {
             return runCatching {
-                this.signingAlgorithmOID =
-                    signingAlgorithmOID ?: credential.key.supportedAlgorithms.first()
+                this.signingAlgorithmOID = signingAlgorithmOID ?: defaultSigningAlgorithm
                 require(this.signingAlgorithmOID in credential.key.supportedAlgorithms) {
                     "Signing algorithm not supported by credential"
                 }

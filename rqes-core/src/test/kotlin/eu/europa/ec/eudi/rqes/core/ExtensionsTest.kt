@@ -56,6 +56,7 @@ class ExtensionsTest {
             serviceAccessAuthorized = serviceAccessAuthorized,
             outputPathDir = outputPathDir,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
+            defaultSigningAlgorithm = SigningAlgorithmOID.ECDSA_SHA256,
         )
     }
 
@@ -67,7 +68,7 @@ class ExtensionsTest {
     @Test
     fun `test Authorized signDocuments extension`() = runTest {
         val authorizationCode = AuthorizationCode(code = "let me in")
-        authorizedService.documentsToSign = listOf(mockk{
+        authorizedService.documentsToSign = listOf(mockk {
             every { label } returns "test document"
             every { documentOutputPath } returns outputPathDir + File.separator + "document.pdf"
         })

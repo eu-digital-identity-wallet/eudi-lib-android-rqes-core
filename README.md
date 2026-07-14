@@ -83,6 +83,10 @@ val rqesService = RQESService(
     // set the hashing algorithm that will be used
     // default is SHA-256 as shown below
     hashAlgorithm = HashAlgorithmOID.SHA_256,
+    // set the default signing algorithm that will be used when signing documents
+    // default is ECDSA with SHA-256 as shown below; it can be overridden per request
+    // in getCredentialAuthorizationUrl and must be supported by the selected credential
+    signingAlgorithm = SigningAlgorithmOID.ECDSA_SHA256,
     // optionally provide a HttpClientFactory to create a HttpClient for the service
     // this is useful for logging, testing, etc.
     httpClientFactory = {
@@ -154,8 +158,10 @@ val credentialAuthorizationUrl = authorizedService.getCredentialAuthorizationUrl
     credential = credential,
     documents = unsignedDocuments,
     // optionally provide the signing algorithm to use when signing the documents
-    // if not provided the first available supported algorithm from the credential 
-    // will be used
+    // if not provided the service's default signing algorithm will be used
+    // the selected algorithm must be supported by the credential; the list of
+    // supported signing algorithms is available on the credential itself via
+    // credential.key.supportedAlgorithms (CredentialInfo)
     signingAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256
 ).getOrThrow()
 

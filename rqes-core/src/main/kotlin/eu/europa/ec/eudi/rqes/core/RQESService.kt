@@ -36,10 +36,15 @@ import java.io.File
  * - The credential phase, which handles document signing with authorized credentials
  *
  * @property hashAlgorithm The algorithm OID used for hashing documents during the signing process.
+ * @property signingAlgorithm The default signing algorithm OID used when signing documents, unless
+ * overridden per request in [Authorized.getCredentialAuthorizationUrl]. The selected algorithm must
+ * be supported by the credential used for signing.
  */
 interface RQESService {
 
     val hashAlgorithm: HashAlgorithmOID
+
+    val signingAlgorithm: SigningAlgorithmOID
 
     /**
      * Retrieves the Remote Signature Service Provider (RSSP) metadata.
@@ -107,7 +112,7 @@ interface RQESService {
          *
          * @param credential The credential to be used for signing.
          * @param documents The collection of unsigned documents to be signed.
-         * @param signingAlgorithmOID Optional algorithm OID for signing the documents. If null, the first supported algorithm of the credential should be used.
+         * @param signingAlgorithmOID Optional algorithm OID for signing the documents. If null, the service's default signing algorithm is used. In either case the selected algorithm must be supported by the credential, otherwise an error is returned.
          * @return A [Result] containing an [HttpsUrl] for credential authorization if successful,
          *         or an error if the operation failed.
          */
@@ -165,6 +170,10 @@ interface RQESService {
          * @param config The Cloud Signature Consortium client configuration.
          * @param outputPathDir The directory where signed documents will be stored.
          * @param hashAlgorithm The algorithm OID to use for document hashing, defaults to SHA-256.
+         * @param signingAlgorithm The default signing algorithm OID to use when signing documents,
+         * defaults to ECDSA with SHA-256. It can be overridden per request in
+         * [Authorized.getCredentialAuthorizationUrl] and must be supported by the credential used for
+         * signing.
          * @param httpClientFactory Optional custom HTTP client factory for network requests.
          * @return A configured [RQESService] implementation.
          * @throws IllegalArgumentException If [outputPathDir] does not point to a valid directory.
@@ -174,6 +183,7 @@ interface RQESService {
             config: CSCClientConfig,
             outputPathDir: String,
             hashAlgorithm: HashAlgorithmOID = HashAlgorithmOID.SHA_256,
+            signingAlgorithm: SigningAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256,
             httpClientFactory: (() -> HttpClient)? = null,
         ): RQESService {
             require(File(outputPathDir).isDirectory) {
@@ -184,6 +194,7 @@ interface RQESService {
                 config,
                 outputPathDir,
                 hashAlgorithm,
+                signingAlgorithm,
                 httpClientFactory
             )
         }
