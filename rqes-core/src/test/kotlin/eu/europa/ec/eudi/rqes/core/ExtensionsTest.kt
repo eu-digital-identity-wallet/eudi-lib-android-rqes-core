@@ -56,7 +56,7 @@ class ExtensionsTest {
             serviceAccessAuthorized = serviceAccessAuthorized,
             outputPathDir = outputPathDir,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
-            defaultSigningAlgorithm = SigningAlgorithmOID.ECDSA_SHA256,
+            defaultSigningAlgorithm = RQESService.SigningAlgorithm.Specific(SigningAlgorithmOID.ECDSA_SHA256),
         )
     }
 

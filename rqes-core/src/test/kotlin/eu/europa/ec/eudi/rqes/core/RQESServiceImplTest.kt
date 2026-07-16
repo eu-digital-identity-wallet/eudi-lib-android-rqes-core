@@ -61,7 +61,7 @@ class RQESServiceImplTest {
             ),
             outputPathDir = outputPathDir,
             hashAlgorithm = HashAlgorithmOID.SHA_256,
-            signingAlgorithm = SigningAlgorithmOID.ECDSA_SHA256,
+            signingAlgorithm = RQESService.SigningAlgorithm.Specific(SigningAlgorithmOID.ECDSA_SHA256),
         )
 
         mockkObject(CSCClient.Companion)

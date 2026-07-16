@@ -54,7 +54,7 @@ class RQESServiceTest {
         assertEquals(config, rqesService.config)
         assertEquals("/tmp", rqesService.outputPathDir)
         assertEquals(HashAlgorithmOID.SHA_256, rqesService.hashAlgorithm)
-        assertEquals(SigningAlgorithmOID.ECDSA_SHA256, rqesService.signingAlgorithm)
+        assertIs<RQESService.SigningAlgorithm.FirstSupportedByCredential>(rqesService.signingAlgorithm)
         assertEquals(mockkHttpClientFactory, rqesService.clientFactory)
     }
 

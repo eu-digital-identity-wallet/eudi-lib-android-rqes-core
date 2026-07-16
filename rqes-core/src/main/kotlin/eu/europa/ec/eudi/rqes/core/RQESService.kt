@@ -36,15 +36,15 @@ import java.io.File
  * - The credential phase, which handles document signing with authorized credentials
  *
  * @property hashAlgorithm The algorithm OID used for hashing documents during the signing process.
- * @property signingAlgorithm The default signing algorithm OID used when signing documents, unless
- * overridden per request in [Authorized.getCredentialAuthorizationUrl]. The selected algorithm must
+ * @property signingAlgorithm The default [SigningAlgorithm] used when signing documents, unless
+ * overridden per request in [Authorized.getCredentialAuthorizationUrl]. The resolved algorithm must
  * be supported by the credential used for signing.
  */
 interface RQESService {
 
     val hashAlgorithm: HashAlgorithmOID
 
-    val signingAlgorithm: SigningAlgorithmOID
+    val signingAlgorithm: SigningAlgorithm
 
     /**
      * Retrieves the Remote Signature Service Provider (RSSP) metadata.
@@ -159,6 +159,35 @@ interface RQESService {
         suspend fun signDocuments(): Result<SignedDocuments>
     }
 
+    /**
+     * The signing algorithm used as the service default when signing documents.
+     *
+     * The value is resolved to a concrete [SigningAlgorithmOID] at the moment a credential is
+     * selected in [Authorized.getCredentialAuthorizationUrl]. The resolved algorithm must be
+     * supported by that credential, otherwise the operation fails.
+     */
+    sealed interface SigningAlgorithm {
+
+        /**
+         * Uses the first algorithm listed in the selected credential's supported algorithms
+         * (`credential.key.supportedAlgorithms`).
+         *
+         * This guarantees the default is always one the credential supports, at the cost of not
+         * controlling which specific algorithm is chosen.
+         */
+        data object FirstSupportedByCredential : SigningAlgorithm
+
+        /**
+         * Uses the explicitly provided [oid] as the signing algorithm.
+         *
+         * The algorithm must be supported by the selected credential, otherwise resolving it fails
+         * with an [IllegalArgumentException].
+         *
+         * @property oid The signing algorithm OID to use.
+         */
+        data class Specific(val oid: SigningAlgorithmOID) : SigningAlgorithm
+    }
+
     companion object {
         /**
          * Creates an instance of the RQES service.
@@ -170,10 +199,10 @@ interface RQESService {
          * @param config The Cloud Signature Consortium client configuration.
          * @param outputPathDir The directory where signed documents will be stored.
          * @param hashAlgorithm The algorithm OID to use for document hashing, defaults to SHA-256.
-         * @param signingAlgorithm The default signing algorithm OID to use when signing documents,
-         * defaults to ECDSA with SHA-256. It can be overridden per request in
-         * [Authorized.getCredentialAuthorizationUrl] and must be supported by the credential used for
-         * signing.
+         * @param signingAlgorithm The default [SigningAlgorithm] to use when signing documents,
+         * defaults to [SigningAlgorithm.FirstSupportedByCredential]. It can be overridden per request
+         * in [Authorized.getCredentialAuthorizationUrl] and the resolved algorithm must be supported
+         * by the credential used for signing.
          * @param httpClientFactory Optional custom HTTP client factory for network requests.
          * @return A configured [RQESService] implementation.
          * @throws IllegalArgumentException If [outputPathDir] does not point to a valid directory.
@@ -183,7 +212,7 @@ interface RQESService {
             config: CSCClientConfig,
             outputPathDir: String,
             hashAlgorithm: HashAlgorithmOID = HashAlgorithmOID.SHA_256,
-            signingAlgorithm: SigningAlgorithmOID = SigningAlgorithmOID.ECDSA_SHA256,
+            signingAlgorithm: SigningAlgorithm = SigningAlgorithm.FirstSupportedByCredential,
             httpClientFactory: (() -> HttpClient)? = null,
         ): RQESService {
             require(File(outputPathDir).isDirectory) {
