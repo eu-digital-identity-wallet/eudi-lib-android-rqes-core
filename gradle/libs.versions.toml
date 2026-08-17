@@ -1,23 +1,23 @@
 [versions]
 androidx-test = "1.7.0"
-bouncy-castle = "1.83"
-dependency-license-report = "3.1.1"
-dependencycheck = "12.2.0"
+bouncy-castle = "1.85"
+dependency-license-report = "3.1.4"
+dependencycheck = "13.0.0"
 dokka = "2.2.0"
 espresso-contrib = "3.7.0"
 espresso-core = "3.7.0"
-eudi-rqes-jvm = "0.7.0"
-gradle-plugin = "8.13.2"
-jacoco = "0.8.12"
+eudi-rqes-jvm = "0.8.0"
+gradle-plugin = "9.2.1"
 java = "17"
 junit-android = "1.3.0"
-kotlin = "2.2.21"
-kotlinx-io = "0.9.0"
-kotlin-coroutines-test = "1.10.2"
+kotlin = "2.3.21"
+kover = "0.9.9"
+kotlinx-io = "0.9.1"
+kotlin-coroutines-test = "1.11.0"
 ktor = "3.2.3"
-mavenPublish = "0.36.0"
-mockk = "1.14.9"
-sonarqube = "7.2.3.7755"
+mavenPublish = "0.37.0"
+mockk = "1.14.11"
+sonarqube = "7.4.0.8496"
 
 [libraries]
 android-junit = { module = "androidx.test.ext:junit", version.ref = "junit-android" }
@@ -38,6 +38,7 @@ test-core = { module = "androidx.test:core", version.ref = "androidx-test" }
 test-coreKtx = { module = "androidx.test:core-ktx", version.ref = "androidx-test" }
 test-rules = { module = "androidx.test:rules", version.ref = "androidx-test" }
 test-runner = { module = "androidx.test:runner", version.ref = "androidx-test" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 
 [plugins]
 android-library = { id = "com.android.library", version.ref = "gradle-plugin" }
@@ -45,5 +46,6 @@ dependency-license-report = { id = "com.github.jk1.dependency-license-report", v
 dependencycheck = { id = "org.owasp.dependencycheck", version.ref = "dependencycheck" }
 dokka = { id = "org.jetbrains.dokka", version.ref = "dokka" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "mavenPublish" }
 sonarqube = { id = "org.sonarqube", version.ref = "sonarqube" }

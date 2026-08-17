@@ -21,21 +21,16 @@ import com.github.jk1.license.render.InventoryMarkdownReportRenderer
 import com.vanniktech.maven.publish.AndroidMultiVariantLibrary
 import com.vanniktech.maven.publish.JavadocJar
 import com.vanniktech.maven.publish.SourcesJar
-import java.util.Locale
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.dokka)
     alias(libs.plugins.dependency.license.report)
     alias(libs.plugins.dependencycheck)
     alias(libs.plugins.sonarqube)
     alias(libs.plugins.maven.publish)
-    jacoco
-}
-
-jacoco {
-    toolVersion = libs.versions.jacoco.get()
+    alias(libs.plugins.kover)
 }
 
 val NAMESPACE: String by project
@@ -61,10 +56,6 @@ android {
     }
 
     buildTypes {
-        debug {
-            enableUnitTestCoverage = true
-            enableAndroidTestCoverage = false
-        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -77,16 +68,18 @@ android {
         sourceCompatibility = JavaVersion.toVersion(libs.versions.java.get())
         targetCompatibility = JavaVersion.toVersion(libs.versions.java.get())
     }
-    kotlinOptions {
-        jvmTarget = libs.versions.java.get()
-    }
 
     testOptions {
         unitTests.isReturnDefaultValues = true
     }
 
-    sourceSets.getByName("test").apply {
-        res.setSrcDirs(files("resources"))
+    sourceSets {
+        getByName("test") {
+            res.directories.apply {
+                clear()
+                add("resources")
+            }
+        }
     }
 
     packaging {
@@ -101,11 +94,11 @@ android {
             withSourcesJar()
         }
     }
+}
 
-    androidComponents {
-        onVariants {
-            createJacocoTasks(it.name)
-        }
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.fromTarget(libs.versions.java.get()))
     }
 }
 
@@ -118,6 +111,7 @@ dependencies {
     runtimeOnly(libs.ktor.client.android)
 
     testImplementation(kotlin("test"))
+    testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.bouncy.castle.pkix)
     testImplementation(libs.bouncy.castle.prov)
     testImplementation(libs.mockk)
@@ -192,111 +186,45 @@ mavenPublishing {
     }
 }
 
-// Jacoco Tasks
+// Code coverage
 
-val coverageExclusions = listOf(
-    "**/databinding/*Binding.*",
-    "**/R.class",
-    "**/R$*.class",
-    "**/BuildConfig.*",
-    "**/Manifest*.*",
-    "**/*Test*.*",
-    "android/**/*.*",
-    // butterKnife
-    "**/*\$ViewInjector*.*",
-    "**/*\$ViewBinder*.*",
-    "**/Lambda\$*.class",
-    "**/Lambda.class",
-    "**/*Lambda.class",
-    "**/*Lambda*.class",
-    "**/*_MembersInjector.class",
-    "**/Dagger*Component*.*",
-    "**/*Module_*Factory.class",
-    "**/di/module/*",
-    "**/*_Factory*.*",
-    "**/*Module*.*",
-    "**/*Dagger*.*",
-    "**/*Hilt*.*",
-    // kotlin
-    "**/*MapperImpl*.*",
-    "**/*\$ViewInjector*.*",
-    "**/*\$ViewBinder*.*",
-    "**/BuildConfig.*",
-    "**/*Component*.*",
-    "**/*BR*.*",
-    "**/Manifest*.*",
-    "**/*\$Lambda\$*.*",
-    "**/*Companion*.*",
-    "**/*Module*.*",
-    "**/*Dagger*.*",
-    "**/*Hilt*.*",
-    "**/*MembersInjector*.*",
-    "**/*_MembersInjector.class",
-    "**/*_Factory*.*",
-    "**/*_Provide*Factory*.*",
-    "**/*Extensions*.*"
-)
-
-fun String.capitalize() =
-    replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
-
-fun createJacocoTasks(variantName: String) {
-    val testTaskName = "test${variantName.capitalize()}UnitTest"
-    val taskName = "${testTaskName}Coverage"
-    val javaClasses = layout.buildDirectory.dir("intermediates/javac/${variantName}")
-        .get().asFileTree.matching {
-            exclude(coverageExclusions)
-        }
-    val kotlinClasses = layout.buildDirectory.dir("tmp/kotlin-classes/${variantName}")
-        .get().asFileTree.matching {
-            exclude(coverageExclusions)
-        }
-    val sourceDirs = files(
-        "$projectDir/src/main/java",
-        "$projectDir/src/main/kotlin",
-        "$projectDir/src/${variantName}/java",
-        "$projectDir/src/${variantName}/kotlin"
-    )
-    val executionDataVariant =
-        layout.buildDirectory.file("/outputs/unit_test_code_coverage/${variantName}UnitTest/${testTaskName}.exec")
-            .get().asFile
-
-    val reportTask = tasks.register<JacocoReport>(taskName) {
-        group = "reporting"
-        description = "Generate Jacoco coverage reports for the $variantName build."
-        dependsOn(testTaskName)
-        reports {
-            xml.required = true
-            html.required = true
-        }
-        sourceDirectories.setFrom(sourceDirs)
-        classDirectories.setFrom(javaClasses, kotlinClasses)
-        executionData.setFrom(executionDataVariant)
-
-        doLast {
-            layout.buildDirectory.file("reports/jacoco/${taskName}/html/index.html")
-                .get()
-                .asFile
-                .readText()
-                .let { Regex("Total[^%]*>(\\d?\\d?\\d?%)").find(it) }
-                ?.let { println("Test coverage: ${it.groupValues[1]}") }
-        }
-    }
-    tasks.register<JacocoCoverageVerification>("${testTaskName}CoverageVerification") {
-        group = "reporting"
-        description = "Verifies Jacoco coverage for the $variantName build."
-        dependsOn(reportTask.name)
-
-        violationRules {
-            rule {
-                limit {
-                    minimum = 80.toBigDecimal()
-                }
+kover {
+    reports {
+        filters {
+            excludes {
+                classes(
+                    "*.BuildConfig",
+                    "*.Manifest",
+                    "*.Manifest\$*",
+                    "*.R",
+                    "*.R\$*",
+                    "*ExtensionsKt"
+                )
             }
         }
 
-        classDirectories.setFrom(kotlinClasses, javaClasses)
-        sourceDirectories.setFrom(sourceDirs)
-        executionData.setFrom("${layout.buildDirectory.get()}$executionDataVariant")
+        verify {
+            rule {
+                minBound(80)
+            }
+        }
+    }
+}
+
+// Aliases for the previous Jacoco task names. The shared SAST/Sonar workflow
+// (.github/workflows/sonar.yml) invokes `testDebugUnitTestCoverage` by name.
+listOf("debug", "release").forEach { variant ->
+    val suffix = variant.replaceFirstChar { it.uppercase() }
+
+    tasks.register("test${suffix}UnitTestCoverage") {
+        group = "reporting"
+        description = "Generates Kover coverage reports for the $variant build."
+        dependsOn("koverXmlReport$suffix", "koverHtmlReport$suffix", "koverLog$suffix")
+    }
+
+    tasks.register("test${suffix}UnitTestCoverageVerification") {
+        group = "verification"
+        description = "Verifies Kover coverage for the $variant build."
+        dependsOn("koverVerify$suffix")
     }
 }
