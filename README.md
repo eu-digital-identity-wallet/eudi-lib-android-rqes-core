@@ -192,6 +192,36 @@ signedDocuments.forEach { (label, file) ->
 val signedDocumentsAlt = authorizedService.signDocuments(credentialAuthorizationCode).getOrThrow()
 ```
 
+### Observing signings
+
+The service can tell you whenever a signing finishes, so you can keep a history of them, collect
+statistics, or update your app. Provide an `RqesSigningLogger` when constructing the service:
+
+```kotlin
+val rqesService = RQESService(
+    // the configuration shown above,
+    signingLogger = { record ->
+        when (val outcome = record.outcome) {
+            RqesSigningRecord.Outcome.Completed -> save(record)
+            is RqesSigningRecord.Outcome.Failed -> saveFailure(outcome.reason)
+        }
+    }
+)
+```
+
+The `RqesSigningRecord` describes what happened, and never contains the signed files themselves:
+
+| Property | Description |
+|---|---|
+| `outcome` | `Completed`, or `Failed` with a reason when one is known |
+| `certificateSerialNumber` | the serial number of the certificate that signed, if known |
+| `documents` | one entry per signed document: its `label`, its `dtbsr` digest as Base64, and its `sizeBytes` |
+| `serviceName` | the signing service's display name and language tag, if known |
+
+The logger is called from `signDocuments()`, once the credential has been authorized. A signing that
+never reaches that point — the service is unreachable, or the User abandons the flow — is therefore
+not reported.
+
 ### Document Retrieval
 
 This library is also implements a Document Retrieval functionality, that allows to retrieve the

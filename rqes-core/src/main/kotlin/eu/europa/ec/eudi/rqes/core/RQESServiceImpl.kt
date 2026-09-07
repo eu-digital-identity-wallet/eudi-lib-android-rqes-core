@@ -56,6 +56,7 @@ import kotlin.uuid.Uuid
  * @param hashAlgorithm The algorithm OID, for hashing the documents.
  * @param signingAlgorithm The default [RQESService.SigningAlgorithm] used for signing. The resolved algorithm must be supported by the selected credential, otherwise an error is thrown.
  * @param clientFactory The HTTP client factory. If this property is null, the default HTTP client factory will be used.
+ * @param signingLogger Optional observer notified when a signing operation finishes.
  */
 class RQESServiceImpl(
     @VisibleForTesting internal val serviceEndpointUrl: String,
@@ -63,7 +64,8 @@ class RQESServiceImpl(
     @VisibleForTesting internal val outputPathDir: String,
     override val hashAlgorithm: HashAlgorithmOID,
     override val signingAlgorithm: RQESService.SigningAlgorithm,
-    @VisibleForTesting internal val clientFactory: (() -> HttpClient)? = null
+    @VisibleForTesting internal val clientFactory: (() -> HttpClient)? = null,
+    @VisibleForTesting internal val signingLogger: RqesSigningLogger? = null
 ) : RQESService {
 
     /**
@@ -200,7 +202,8 @@ class RQESServiceImpl(
                     serviceAccessAuthorized = authorized,
                     outputPathDir = outputPathDir,
                     hashAlgorithm = this@RQESServiceImpl.hashAlgorithm,
-                    defaultSigningAlgorithm = signingAlgorithm
+                    defaultSigningAlgorithm = signingAlgorithm,
+                    signingLogger = signingLogger
                 )
             }
         }
@@ -221,6 +224,7 @@ class RQESServiceImpl(
      * @property outputPathDir Directory where signed documents will be stored.
      * @property hashAlgorithm The algorithm used for creating document hashes.
      * @property defaultSigningAlgorithm The default [RQESService.SigningAlgorithm], resolved to a concrete algorithm OID when a credential is selected, and used when none is provided through the [getCredentialAuthorizationUrl] method.
+     * @property signingLogger Optional observer notified when a signing operation finishes.
      */
     class AuthorizedImpl(
         @VisibleForTesting internal val serverState: String,
@@ -228,7 +232,8 @@ class RQESServiceImpl(
         @VisibleForTesting internal val serviceAccessAuthorized: ServiceAccessAuthorized,
         @VisibleForTesting internal val outputPathDir: String,
         val hashAlgorithm: HashAlgorithmOID,
-        val defaultSigningAlgorithm: RQESService.SigningAlgorithm
+        val defaultSigningAlgorithm: RQESService.SigningAlgorithm,
+        @VisibleForTesting internal val signingLogger: RqesSigningLogger? = null
     ) : RQESService.Authorized {
 
         @VisibleForTesting
@@ -378,7 +383,8 @@ class RQESServiceImpl(
                         documentsToSign = documentsToSign,
                         documentDigestList = documentDigestList,
                         credentialAuthorized = authorized,
-                        signingAlgorithm = signingAlgorithmOID
+                        signingAlgorithm = signingAlgorithmOID,
+                        signingLogger = signingLogger
                     )
                 }
             }
@@ -405,13 +411,15 @@ class RQESServiceImpl(
      * @param documentDigestList Document digests prepared for the signing request.
      * @param credentialAuthorized The authorized credential access for signing.
      * @param signingAlgorithm The algorithm to be used for the signing operation.
+     * @param signingLogger Optional observer notified when the signing operation finishes.
      */
     class CredentialAuthorizedImpl(
         @VisibleForTesting internal val client: CSCClient,
         @VisibleForTesting internal val documentsToSign: List<DocumentToSign>,
         @VisibleForTesting internal val documentDigestList: DocumentDigestList,
         @VisibleForTesting internal val credentialAuthorized: CredentialAuthorized,
-        val signingAlgorithm: SigningAlgorithmOID
+        val signingAlgorithm: SigningAlgorithmOID,
+        @VisibleForTesting internal val signingLogger: RqesSigningLogger? = null
     ) : RQESService.CredentialAuthorized {
 
         /**
@@ -430,7 +438,7 @@ class RQESServiceImpl(
          *         or an error if the signing operation failed
          */
         override suspend fun signDocuments(): Result<SignedDocuments> {
-            return runCatching {
+            val result = runCatching {
                 with(client) {
                     val signatureList = when (credentialAuthorized) {
                         is CredentialAuthorized.SCAL1 -> credentialAuthorized
@@ -452,6 +460,35 @@ class RQESServiceImpl(
                         it.label to File(it.documentOutputPath)
                     }.let { SignedDocuments(it) }
                 }
+            }
+            notifySigningLogger(result)
+            return result
+        }
+
+        private fun notifySigningLogger(result: Result<SignedDocuments>) {
+            val logger = signingLogger ?: return
+            runCatching {
+                logger.onSigningCompleted(
+                    RqesSigningRecord(
+                        outcome = result.fold(
+                            onSuccess = { RqesSigningRecord.Outcome.Completed },
+                            onFailure = { RqesSigningRecord.Outcome.Failed(it.message) },
+                        ),
+                        certificateSerialNumber = credentialAuthorized.credentialCertificate.serialNumber,
+                        documents = documentsToSign.map { document ->
+                            RqesSigningRecord.SignedDocument(
+                                label = document.label,
+                                dtbsr = documentDigestList.documentDigests
+                                    .firstOrNull { it.label == document.label }
+                                    ?.hash
+                                    ?.asBase64(),
+                                sizeBytes = runCatching { File(document.documentOutputPath).length() }
+                                    .getOrNull()
+                                    ?.takeIf { it > 0 }
+                            )
+                        }
+                    )
+                )
             }
         }
     }
