@@ -41,7 +41,7 @@ val POM_DESCRIPTION: String by project
 android {
     namespace = NAMESPACE
     group = GROUP
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 29
