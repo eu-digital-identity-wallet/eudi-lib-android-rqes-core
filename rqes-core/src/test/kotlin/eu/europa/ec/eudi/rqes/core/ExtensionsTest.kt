@@ -51,7 +51,6 @@ class ExtensionsTest {
     @BeforeTest
     fun setUp() {
         authorizedService = AuthorizedImpl(
-            serverState = serverState,
             client = mockClient,
             serviceAccessAuthorized = serviceAccessAuthorized,
             outputPathDir = outputPathDir,
@@ -95,7 +94,7 @@ class ExtensionsTest {
                     with(mockClient) {
                         authorizeWithAuthorizationCode(
                             authorizationCode,
-                            authorizedService.serverState
+                            serverState
                         )
                     }
                 } returns Result.success(credentialAuthorized)
@@ -108,7 +107,7 @@ class ExtensionsTest {
             }
         } just runs
 
-        val result = authorizedService.signDocuments(authorizationCode)
+        val result = authorizedService.signDocuments(authorizationCode, serverState)
         assert(result.isSuccess)
     }
 }

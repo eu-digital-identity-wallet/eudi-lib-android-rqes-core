@@ -77,10 +77,16 @@ interface RQESService {
      * access and returns an authorized service instance.
      *
      * @param authorizationCode The authorization code received after user authorization.
+     * @param serverState The `state` parameter received with the authorization code. It must match
+     *        the state of the authorization request, otherwise the authorization fails with
+     *        [eu.europa.ec.eudi.rqes.AuthorizationError.InvalidAuthorizationState].
      * @return A [Result] containing an [Authorized] service instance if successful,
      *         or an error if the authorization failed.
      */
-    suspend fun authorizeService(authorizationCode: AuthorizationCode): Result<Authorized>
+    suspend fun authorizeService(
+        authorizationCode: AuthorizationCode,
+        serverState: String
+    ): Result<Authorized>
 
 
     /**
@@ -130,10 +136,16 @@ interface RQESService {
          * an interface to sign the previously specified documents.
          *
          * @param authorizationCode The authorization code received after user credential authorization.
+         * @param serverState The `state` parameter received with the authorization code. It must match
+         *        the state of the authorization request, otherwise the authorization fails with
+         *        [eu.europa.ec.eudi.rqes.AuthorizationError.InvalidAuthorizationState].
          * @return A [Result] containing a [CredentialAuthorized] instance if successful,
          *         or an error if the authorization failed.
          */
-        suspend fun authorizeCredential(authorizationCode: AuthorizationCode): Result<CredentialAuthorized>
+        suspend fun authorizeCredential(
+            authorizationCode: AuthorizationCode,
+            serverState: String
+        ): Result<CredentialAuthorized>
     }
 
     /**

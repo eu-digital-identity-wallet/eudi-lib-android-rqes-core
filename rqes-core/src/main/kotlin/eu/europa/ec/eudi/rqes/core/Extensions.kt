@@ -25,9 +25,11 @@ import eu.europa.ec.eudi.rqes.AuthorizationCode
  * the documents.
  *
  * @param authorizationCode The authorization code
+ * @param serverState The `state` parameter received with the authorization code
  * @return The signed documents
  */
 suspend fun RQESService.Authorized.signDocuments(
-    authorizationCode: AuthorizationCode
-): Result<SignedDocuments> = this.authorizeCredential(authorizationCode)
+    authorizationCode: AuthorizationCode,
+    serverState: String
+): Result<SignedDocuments> = this.authorizeCredential(authorizationCode, serverState)
     .mapCatching { it.signDocuments().getOrThrow() }

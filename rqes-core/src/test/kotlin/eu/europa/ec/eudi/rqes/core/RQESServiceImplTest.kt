@@ -27,6 +27,7 @@ import eu.europa.ec.eudi.rqes.ServiceAccessAuthorized
 import eu.europa.ec.eudi.rqes.ServiceAuthorizationRequestPrepared
 import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkObject
@@ -127,13 +128,13 @@ class RQESServiceImplTest {
         runTest {
             val authorizationCode = AuthorizationCode(code = "let me in")
 
-            val result = service.authorizeService(authorizationCode)
+            val result = service.authorizeService(authorizationCode, "server-state")
             assert(result.isFailure)
             assertIs<IllegalStateException>(result.exceptionOrNull())
         }
 
     @Test
-    fun `authorizeService returns authorized`() =
+    fun `authorizeService passes the state received with the authorization code to the CSC client`() =
         runTest {
             val mockAuthorizationCodeURL = HttpsUrl("https://example.com/auth").getOrThrow()
             val authorizationRequestPrepared = mockk<AuthorizationRequestPrepared>() {
@@ -146,19 +147,29 @@ class RQESServiceImplTest {
 
             service.client = mockClient
             service.serviceAuthRequestPrepared = serviceAuthorizationRequestPrepared
-            service.serverState = "server-state"
+            service.serverState = "state-of-the-request"
 
             val authorizationCode = AuthorizationCode(code = "let me in")
+            // The CSC client compares the states; it is mocked here (see AuthorizationStateTest)
+            val receivedState = "state-received-with-the-code"
             coEvery {
                 with(mockClient) {
                     serviceAuthorizationRequestPrepared.authorizeWithAuthorizationCode(
                         authorizationCode,
-                        service.serverState
+                        receivedState
                     )
                 }
             } returns Result.success(serviceAccessAuthorized)
 
-            val result = service.authorizeService(authorizationCode)
+            val result = service.authorizeService(authorizationCode, receivedState)
             assert(result.isSuccess)
+            coVerify(exactly = 1) {
+                with(mockClient) {
+                    serviceAuthorizationRequestPrepared.authorizeWithAuthorizationCode(
+                        authorizationCode,
+                        receivedState
+                    )
+                }
+            }
         }
 }
