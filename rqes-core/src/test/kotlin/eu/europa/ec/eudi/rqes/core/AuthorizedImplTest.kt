@@ -33,6 +33,7 @@ import eu.europa.ec.eudi.rqes.SigningAlgorithmOID
 import eu.europa.ec.eudi.rqes.core.RQESService.SigningAlgorithm
 import eu.europa.ec.eudi.rqes.core.RQESServiceImpl.AuthorizedImpl
 import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.unmockkAll
@@ -60,7 +61,6 @@ class AuthorizedImplTest {
     @BeforeTest
     fun setUp() {
         authorizedService = AuthorizedImpl(
-            serverState = serverState,
             client = mockClient,
             serviceAccessAuthorized = serviceAccessAuthorized,
             outputPathDir = outputPathDir,
@@ -149,7 +149,7 @@ class AuthorizedImplTest {
                 with(mockClient) {
                     prepareCredentialAuthorizationRequest(
                         credentialAuthorizationSubject = credentialAuthorizationSubject,
-                        walletState = serverState
+                        walletState = any()
                     )
                 }
             } returns Result.success(credentialAuthorizationRequestPrepared)
@@ -173,7 +173,7 @@ class AuthorizedImplTest {
         val authorizationCode = AuthorizationCode(code = "let me in")
 
         authorizedService.documentsToSign = mockk()
-        val result = authorizedService.authorizeCredential(authorizationCode)
+        val result = authorizedService.authorizeCredential(authorizationCode, serverState)
         assert(result.isFailure)
         assertIs<IllegalStateException>(result.exceptionOrNull())
 
@@ -185,7 +185,7 @@ class AuthorizedImplTest {
         val authorizationCode = AuthorizationCode(code = "let me in")
 
         authorizedService.credAuthRequestPrepared = mockk()
-        val result = authorizedService.authorizeCredential(authorizationCode)
+        val result = authorizedService.authorizeCredential(authorizationCode, serverState)
         assert(result.isFailure)
         assertIs<IllegalStateException>(result.exceptionOrNull())
 
@@ -193,7 +193,7 @@ class AuthorizedImplTest {
     }
 
     @Test
-    fun `authorizeCredential returns authorized credential`() = runTest {
+    fun `authorizeCredential passes the state received with the authorization code to the CSC client`() = runTest {
 
         val credentialAuthRequestPrepared = mockk<CredentialAuthorizationRequestPrepared>()
         val credentialAuthorized = mockk<CredentialAuthorized>()
@@ -204,17 +204,26 @@ class AuthorizedImplTest {
         authorizedService.credAuthRequestPrepared = credentialAuthRequestPrepared
 
         val authorizationCode = AuthorizationCode(code = "let me in")
+        val receivedState = "state-received-with-the-code"
         coEvery {
             with(mockClient) {
                 credentialAuthRequestPrepared.authorizeWithAuthorizationCode(
                     authorizationCode,
-                    authorizedService.serverState
+                    receivedState
                 )
             }
         } returns Result.success(credentialAuthorized)
 
-        val result = authorizedService.authorizeCredential(authorizationCode)
+        val result = authorizedService.authorizeCredential(authorizationCode, receivedState)
         assert(result.isSuccess)
+        coVerify(exactly = 1) {
+            with(mockClient) {
+                credentialAuthRequestPrepared.authorizeWithAuthorizationCode(
+                    authorizationCode,
+                    receivedState
+                )
+            }
+        }
     }
 
     @Test
@@ -277,7 +286,7 @@ class AuthorizedImplTest {
                 with(mockClient) {
                     prepareCredentialAuthorizationRequest(
                         credentialAuthorizationSubject = credentialAuthorizationSubject,
-                        walletState = serverState
+                        walletState = any()
                     )
                 }
             } returns Result.success(credentialAuthorizationRequestPrepared)
@@ -300,7 +309,6 @@ class AuthorizedImplTest {
     fun `getCredentialAuthorizationUrl with FirstSupportedByCredential default uses the credential's first supported algorithm`() =
         runTest {
             val authorizedServiceWithFirstSupported = AuthorizedImpl(
-                serverState = serverState,
                 client = mockClient,
                 serviceAccessAuthorized = serviceAccessAuthorized,
                 outputPathDir = outputPathDir,
@@ -357,7 +365,7 @@ class AuthorizedImplTest {
                 with(mockClient) {
                     prepareCredentialAuthorizationRequest(
                         credentialAuthorizationSubject = credentialAuthorizationSubject,
-                        walletState = serverState
+                        walletState = any()
                     )
                 }
             } returns Result.success(credentialAuthorizationRequestPrepared)
@@ -423,7 +431,7 @@ class AuthorizedImplTest {
                 with(mockClient) {
                     prepareCredentialAuthorizationRequest(
                         credentialAuthorizationSubject = credentialAuthorizationSubject,
-                        walletState = serverState
+                        walletState = any()
                     )
                 }
             } returns Result.success(credentialAuthorizationRequestPrepared)

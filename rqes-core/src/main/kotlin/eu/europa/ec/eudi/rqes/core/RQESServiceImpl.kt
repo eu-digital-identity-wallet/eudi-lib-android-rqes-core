@@ -69,7 +69,8 @@ class RQESServiceImpl(
 ) : RQESService {
 
     /**
-     * The server state. This property is used to store the server state.
+     * The `state` sent in the service authorization request. The CSC client compares it with the
+     * `state` received with the authorization code.
      */
     internal lateinit var serverState: String
 
@@ -136,7 +137,7 @@ class RQESServiceImpl(
      * Generates a service authorization URL for initiating the user authorization flow.
      *
      * This method is the first step in the authorization workflow. It:
-     * 1. Generates a random server state value for security validation
+     * 1. Generates a random `state` for the authorization request
      * 2. Prepares a service authorization request through the CSC client
      * 3. Stores the prepared request for later use in [authorizeService]
      *
@@ -166,23 +167,28 @@ class RQESServiceImpl(
     /**
      * Completes the service authorization process by exchanging the authorization code for service access.
      *
-     * This method requires that [getServiceAuthorizationUrl] has been called previously to initialize
-     * the server state and prepare the authorization request. It exchanges the authorization code
+     * This method requires that [getServiceAuthorizationUrl] has been called previously to generate
+     * the `state` and prepare the authorization request. It exchanges the authorization code
      * received after user authentication for service access credentials.
      *
      * Implementation workflow:
-     * 1. Verifies that the server state has been initialized through [getServiceAuthorizationUrl]
-     * 2. Uses the prepared authorization request to exchange the code for access
+     * 1. Verifies that [getServiceAuthorizationUrl] has been called
+     * 2. Uses the prepared authorization request to exchange the code for access; the CSC client
+     *    first checks that [serverState] matches the state of the prepared request
      * 3. Creates an [AuthorizedImpl] instance with the authorized service access
      *
      * @param authorizationCode The authorization code received after user completes the authorization flow
+     * @param serverState The `state` parameter received with the authorization code
      * @return A [Result] containing the [RQESService.Authorized] implementation if successful,
      *         or an error if the authorization process failed
      * @throws IllegalStateException If [getServiceAuthorizationUrl] was not called before this method
      */
-    override suspend fun authorizeService(authorizationCode: AuthorizationCode): Result<RQESService.Authorized> {
+    override suspend fun authorizeService(
+        authorizationCode: AuthorizationCode,
+        serverState: String,
+    ): Result<RQESService.Authorized> {
         return runCatching {
-            check(::serverState.isInitialized) {
+            check(this::serverState.isInitialized) {
                 "Server state not initialized. Call getServiceAuthorizationUrl() first"
             }
             val prepared = serviceAuthRequestPrepared
@@ -197,7 +203,6 @@ class RQESServiceImpl(
 
                 // returns
                 AuthorizedImpl(
-                    serverState = serverState,
                     client = this@with,
                     serviceAccessAuthorized = authorized,
                     outputPathDir = outputPathDir,
@@ -218,7 +223,6 @@ class RQESServiceImpl(
      * storing information about documents to be signed, credential authorization state, and
      * cryptographic parameters needed for the signing operation.
      *
-     * @property serverState Security state token used for validating authorization responses.
      * @property client The CSC client for communicating with the RSSP.
      * @property serviceAccessAuthorized The authorized service access credentials from OAuth2 flow.
      * @property outputPathDir Directory where signed documents will be stored.
@@ -227,7 +231,6 @@ class RQESServiceImpl(
      * @property signingLogger Optional observer notified when a signing operation finishes.
      */
     class AuthorizedImpl(
-        @VisibleForTesting internal val serverState: String,
         @VisibleForTesting internal val client: CSCClient,
         @VisibleForTesting internal val serviceAccessAuthorized: ServiceAccessAuthorized,
         @VisibleForTesting internal val outputPathDir: String,
@@ -284,7 +287,7 @@ class RQESServiceImpl(
          * 1. Selects an appropriate signing algorithm from those supported by the credential
          * 2. Prepares the documents for signing and converts them to the appropriate format
          * 3. Calculates cryptographic hashes of the documents using the configured algorithm
-         * 4. Prepares a credential authorization request with the document hashes
+         * 4. Prepares a credential authorization request with the document hashes and a new random `state`
          * 5. Stores the prepared request and document information for later use
          *
          * The returned URL should be presented to the user (typically by redirecting them to it),
@@ -298,6 +301,7 @@ class RQESServiceImpl(
          * @return A [Result] containing the [HttpsUrl] for credential authorization if successful,
          *         or an error if preparation failed
          */
+        @OptIn(ExperimentalUuidApi::class)
         override suspend fun getCredentialAuthorizationUrl(
             credential: CredentialInfo,
             documents: UnsignedDocuments,
@@ -325,7 +329,7 @@ class RQESServiceImpl(
                             documentDigestList = documentDigestList,
                             numSignatures = documentsToSign.size
                         ),
-                        walletState = serverState
+                        walletState = Uuid.random().toString()
                     )
                         .getOrThrow()
                         .also { credAuthRequestPrepared = it }
@@ -346,18 +350,23 @@ class RQESServiceImpl(
          *
          * Implementation workflow:
          * 1. Verifies that all required state has been initialized through [getCredentialAuthorizationUrl]
-         * 2. Uses the prepared request to exchange the code for credential access
+         * 2. Uses the prepared request to exchange the code for credential access; the CSC client
+         *    first checks that [serverState] matches the state of the prepared request
          * 3. Creates a [CredentialAuthorizedImpl] instance with the authorized credential and document info
          *
          * This is the final authorization step before actual document signing can occur.
          *
          * @param authorizationCode The authorization code received after user completes the credential authorization flow
+         * @param serverState The `state` parameter received with the authorization code
          * @return A [Result] containing a [RQESService.CredentialAuthorized] implementation if successful,
          *         or an error if the authorization process failed
          * @throws IllegalStateException If [getCredentialAuthorizationUrl] was not called before this method
          *         or if required state is missing
          */
-        override suspend fun authorizeCredential(authorizationCode: AuthorizationCode): Result<RQESService.CredentialAuthorized> {
+        override suspend fun authorizeCredential(
+            authorizationCode: AuthorizationCode,
+            serverState: String,
+        ): Result<RQESService.CredentialAuthorized> {
             return runCatching {
                 check(::credAuthRequestPrepared.isInitialized) {
                     "Server state not initialized. Call getServiceAuthorizationUrl() first"

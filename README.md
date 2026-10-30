@@ -53,13 +53,13 @@ sequenceDiagram
     RQESService -->>- Client: RSSPMetadata
     Client ->>+ RQESService: getServiceAuthorizationUrl()
     RQESService -->>- Client: HttpsUrl
-    Client ->>+ RQESService: authorizeService(authorizationCode)
+    Client ->>+ RQESService: authorizeService(authorizationCode, serverState)
     RQESService -->>- Client: RQESService.Authorized
     Client ->>+ RQESService.Authorized: listCredentials(request)
     RQESService.Authorized -->>- Client: List<CredentialInfo>
     Client ->>+ RQESService.Authorized: getCredentialAuthorizationUrl(credential, UnsignedDocuments)
     RQESService.Authorized -->>- Client: HttpsUrl
-    Client ->>+ RQESService.Authorized: authorizeCredential(authorizationCode)
+    Client ->>+ RQESService.Authorized: authorizeCredential(authorizationCode, serverState)
     RQESService.Authorized -->>- Client: RQESService.CredentialAuthorized
     Client ->>+ RQESService.CredentialAuthorized: signDocuments()
     RQESService.CredentialAuthorized -->>- Client: SignedDocuments
@@ -108,28 +108,29 @@ val metadata = rqesService.getRSSPMetadata().getOrThrow()
 
 To authorize the service, you need to get the authorization URL and open it in a browser. After the
 user has authorized the service, the browser will be redirected to the `authFlowRedirectionURI`,
-that
-is configured in the `CSCClientConfig`, with a query parameter named `code` containing the
-authorization code. You can then authorize the service by calling the `authorizeService` method:
+that is configured in the `CSCClientConfig`, with the query parameters `code`, containing the
+authorization code, and `state`. You can then authorize the service by calling the `authorizeService`
+method with both values. The `state` must match the state of the authorization request, otherwise
+the authorization fails with `AuthorizationError.InvalidAuthorizationState`:
 
 ```kotlin
 val authorizationUrl = rqesService.getServiceAuthorizationUrl().getOrThrow()
 
 // Open the authorizationUrl in a browser
 // After the user has authorized the service, the browser will be redirected to the authFlowRedirectionURI
-// with a query parameter named "code" containing the authorization code
+// with the query parameters "code" and "state"
 
 val authorizationCode = AuthorizationCode("code")
-val authorizedService = rqesService.authorizeService(authorizationCode).getOrThrow()
+val authorizedService = rqesService.authorizeService(authorizationCode, "state").getOrThrow()
 ```
 
 With the authorized service, you can list the available credentials by calling the `listCredentials`
 method.
 
 You can then select the credential you want to use, prepare the documents to sign, and get
-the credential authorization URL by calling the `getCredentialAuthorizationUrl` method. After the
-user has authorized the credential, you can authorize it by calling the `authorizeCredential`
-method.
+the credential authorization URL by calling the `getCredentialAuthorizationUrl` method. This request
+has its own `state`. After the user has authorized the credential, you can authorize it by calling
+the `authorizeCredential` method with the `code` and `state` received in the redirect.
 
 Finally, you can sign the documents by calling the `signDocuments` method.
 
@@ -170,12 +171,11 @@ val credentialAuthorizationUrl = authorizedService.getCredentialAuthorizationUrl
 ).getOrThrow()
 
 // After the user has authorized the credential will be redirected to the
-// authFlowRedirectionURI with a query parameter named "code" containing the
-// authorization code
+// authFlowRedirectionURI with the query parameters "code" and "state"
 val credentialAuthorizationCode = AuthorizationCode("credential-code")
 
 val authorizedCredential =
-    authorizedService.authorizeCredential(credentialAuthorizationCode).getOrThrow()
+    authorizedService.authorizeCredential(credentialAuthorizationCode, "credential-state").getOrThrow()
 
 // Sign the documents
 val signedDocuments = authorizedCredential.signDocuments().getOrThrow()
@@ -189,7 +189,8 @@ signedDocuments.forEach { (label, file) ->
 // Alternatively, you can use the extension function to sign the documents
 // directly from the authorized service without the need to call authorizeCredential
 // method first and then call signDocuments method
-val signedDocumentsAlt = authorizedService.signDocuments(credentialAuthorizationCode).getOrThrow()
+val signedDocumentsAlt =
+    authorizedService.signDocuments(credentialAuthorizationCode, "credential-state").getOrThrow()
 ```
 
 ### Observing signings
